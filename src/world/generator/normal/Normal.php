@@ -42,8 +42,11 @@ use pocketmine\world\generator\populator\GroundCover;
 use pocketmine\world\generator\populator\Ore;
 use pocketmine\world\generator\populator\Populator;
 use pocketmine\world\World;
+use function ceil;
+use function floor;
 use function fmod;
 use function max;
+use function min;
 
 class Normal extends Generator{
 
@@ -167,7 +170,7 @@ class Normal extends Generator{
 		//getFastNoise3D expects the inputs to be aligned with the sampling rate, otherwise the samples will be taken
 		//from different coordinates than we originally used when we first implemented this generator
 		$noiseMin = (int) floor($lowestNoiseBlock / self::NOISE_SAMPLING_RATE_Y) * self::NOISE_SAMPLING_RATE_Y;
-		$noiseMax = (int) ceil($highestNoiseBlock  / self::NOISE_SAMPLING_RATE_Y) * self::NOISE_SAMPLING_RATE_Y;
+		$noiseMax = (int) ceil($highestNoiseBlock / self::NOISE_SAMPLING_RATE_Y) * self::NOISE_SAMPLING_RATE_Y;
 
 		//we only need to generate noise for the blocks which could be affected
 		//outside these bounds we'll just flood-fill blocks to save time
@@ -214,7 +217,7 @@ class Normal extends Generator{
 					//noiseValue would anyway be <= 0 above maxSum because the smoothing term is >= 1
 					$noiseValue = $y > $noiseMax ?
 						-1 :
-						($noise[$x][$z][$y - $noiseMin] ?? throw new \LogicException("wtf $y $noiseMin")) - 1 / $smoothHeight * ($y - $smoothHeight - $minSum);
+						$noise[$x][$z][$y - $noiseMin] - 1 / $smoothHeight * ($y - $smoothHeight - $minSum);
 
 					if($noiseValue > 0){
 						$chunk->setBlockStateId($x, $y, $z, $stone);
