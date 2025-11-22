@@ -28,7 +28,8 @@ Docker allows you to map ports, so you don't need to edit `server.properties`.
 
 In the run command shown above, change `19132:19132/udp` to `<port number you want>:19132/udp`. **Note: Do not change the second number.**
 
-**Note: Do not change the port in `server.properties`. This is unnecessary when using Docker and will make things more complicated.**
+> [!WARNING]
+> Do not change the port in `server.properties`. This is unnecessary when using Docker and will make things more complicated.
 
 ## Editing the server data
 The server data (e.g. worlds, `server.properties`, etc.) will be stored in the `data` folder you created above.
@@ -91,6 +92,9 @@ The list of plugins should be given in the format `PluginOne:1.2.3 PluginTwo:4.5
 - `/data` is a read-write data directory where PocketMine stores all data in.
 	This includes PocketMine config files, player data, worlds and plugin config files/data.
 - `/plugins` is a read-only data directory where PocketMine loads plugins from.
+
+## Advanced usage: Passing args to PocketMine-MP.phar inside the container
+The `POCKETMINE_ARGS` environment variable will be passed to `PocketMine-MP.phar` when run.
 
 ## Building this image
 The Dockerfile requires a build-arg `GIT_HASH` to fill the git hash metadata when building `PocketMine-MP.phar`.
