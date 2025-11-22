@@ -1,0 +1,57 @@
+name: Docker Image CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TEST_AGAINST: 4.13.0
+            TESTSUITE_VERSION: 4.0.0
+            COMPILE_SH_ARGS: "-f -g"
+          - TEST_AGAINST: 4.22.2
+            TESTSUITE_VERSION: 4.0.0
+            COMPILE_SH_ARGS: "-f -g"
+          - TEST_AGAINST: 5.0.0
+            TESTSUITE_VERSION: 5.0.0
+            COMPILE_SH_ARGS: "-f -g"
+          - TEST_AGAINST: 5.1.3
+            TESTSUITE_VERSION: 5.0.0
+            COMPILE_SH_ARGS: "-f -g"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+
+    - name: Create data directories
+      run: |
+        mkdir data
+        sudo chown -R 1000:1000 ./testsuite ./data
+
+    - name: Test if it builds
+      run: docker build -t local-pocketmine-mp --build-arg PMMP_TAG=${{ matrix.TEST_AGAINST }} --build-arg COMPILE_SH_ARGS="${{ matrix.COMPILE_SH_ARGS }}" pocketmine-mp
+    
+    - name: Test if it runs the normal server properly
+      run: echo stop | docker run --rm -i local-pocketmine-mp
+
+    - name: Test if it loads plugins
+      run: |
+        echo stop | docker run --rm -i -v $PWD/data:/data -v $PWD/testsuite/${{ matrix.TESTSUITE_VERSION }}/create-data:/plugins local-pocketmine-mp
+        test -f data/plugin_data/data-test/create-data
+        test $(cat data/plugin_data/data-test/create-data) == "successful"
+
+    - name: Test if it persists plugin data
+      run: echo stop | docker run --rm -i -v $PWD/data:/data -v $PWD/testsuite/${{ matrix.TESTSUITE_VERSION }}/verify-data:/plugins local-pocketmine-mp
+  
+    - name: Test if it downloads plugins
+      run: |
+        if [ -d "testsuite/${{ matrix.TESTSUITE_VERSION }}/verify-plugins" ]; then
+          echo stop | docker run --rm -i -v $PWD/data:/data -v $PWD/testsuite/${{ matrix.TESTSUITE_VERSION }}/verify-plugins:/plugins -e POCKETMINE_PLUGINS='PurePerms:1.4.2-c2a PureChat' local-pocketmine-mp
+        fi
