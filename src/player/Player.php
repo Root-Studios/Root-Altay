@@ -1741,7 +1741,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$this->resetItemCooldown($oldItem);
 
 			$slot->pop();
-			$this->returnItemsFromAction($oldItem, $slot, [$ev->getResidue()]);
+			$residue = $ev->getResidue();
+			$this->returnItemsFromAction($oldItem, $slot, $residue !== null ? [$residue] : []);
 
 			return true;
 		}

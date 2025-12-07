@@ -53,6 +53,6 @@ class PlayerItemConsumeEvent extends PlayerEvent implements Cancellable{
 
 	/** Allows overriding the residue item (or null to remove residue) */
 	public function setResidue(?Item $item) : void{
-		$this->residue = $item? clone $item : null;
+		$this->residue = $item !== null ? clone $item : null;
 	}
 }
