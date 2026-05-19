@@ -15,27 +15,30 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup PHP
-        uses: pmmp/setup-php-action@fa2accea978a84097cf40ecc7d46b2d71f258bd5
+        uses: pmmp/setup-php-action@3.2.0
         with:
           php-version: "8.1"
-          install-path: "${{ github.workspace }}/php"
+          install-path: "./bin"
           pm-version-major: "5"
 
       - name: Configure git for HTTPS
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-      - name: Load Composer package cache
+      - name: Restore Composer package cache
         uses: actions/cache@v4
         with:
-          path: "~/.cache/composer"
-          key: "php-8.1-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-8.1-composer-"
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-8.1-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction
 
       - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyze --no-progress
+        run: ./vendor/bin/phpstan analyze --no-progress --memory-limit=2G
 
   phpunit:
     name: PHPUnit
@@ -46,24 +49,27 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup PHP
-        uses: pmmp/setup-php-action@fa2accea978a84097cf40ecc7d46b2d71f258bd5
+        uses: pmmp/setup-php-action@3.2.0
         with:
           php-version: "8.1"
-          install-path: "${{ github.workspace }}/php"
+          install-path: "./bin"
           pm-version-major: "5"
 
       - name: Configure git for HTTPS
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-      - name: Load Composer package cache
+      - name: Restore Composer package cache
         uses: actions/cache@v4
         with:
-          path: "~/.cache/composer"
-          key: "php-8.1-composer-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-8.1-composer-"
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-8.1-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction
 
       - name: Run PHPUnit tests
-        run: ${{ github.workspace }}/php/bin/php ./vendor/bin/phpunit --bootstrap vendor/autoload.php --fail-on-warning tests/phpunit
+        run: ./vendor/bin/phpunit --bootstrap vendor/autoload.php --fail-on-warning tests/phpunit
