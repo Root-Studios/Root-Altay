@@ -1,69 +1,75 @@
-name: Nightly
+name: CI
 
 on:
   push:
-    branches:
-      - master
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build & Publish Nightly
+  phpstan:
+    name: PHPStan
     runs-on: ubuntu-22.04
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@2.32.0
+        uses: pmmp/setup-php-action@3.2.0
         with:
           php-version: "8.1"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          install-path: "./bin"
+          pm-version-major: "5"
 
       - name: Configure git for HTTPS
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-      - name: Load Composer package cache
+      - name: Restore Composer package cache
         uses: actions/cache@v4
         with:
-          path: "~/.cache/composer"
-          key: "php-8.1-composer-nightly-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-8.1-composer-nightly-"
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-8.1-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
 
-      - name: Install dependencies (no-dev)
-        run: composer install --no-dev --classmap-authoritative --ignore-platform-reqs --prefer-dist --no-interaction
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
 
-      - name: Build server phar
-        run: php -dphar.readonly=0 build/server-phar.php --out Zenith.phar --git "${{ github.sha }}"
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyze --no-progress --memory-limit=2G
 
-      - name: Delete existing nightly release
-        uses: dev-drprasad/delete-tag-and-release@v1.1
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-22.04
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: pmmp/setup-php-action@3.2.0
         with:
-          tag_name: nightly
-          delete_release: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+          php-version: "8.1"
+          install-path: "./bin"
+          pm-version-major: "5"
 
-      - name: Publish nightly release
-        uses: ncipollo/release-action@v1.15.0
+      - name: Configure git for HTTPS
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - name: Restore Composer package cache
+        uses: actions/cache@v4
         with:
-          tag: nightly
-          name: "Nightly Build"
-          body: |
-            Automatic nightly build from commit ${{ github.sha }}.
+          path: |
+            ~/.cache/composer/files
+            ~/.cache/composer/vcs
+          key: "composer-v2-cache-8.1-${{ hashFiles('./composer.lock') }}"
+          restore-keys: |
+            composer-v2-cache-
 
-            **Branch:** `${{ github.ref_name }}`
-            **Commit:** [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
-            **Built at:** ${{ github.event.head_commit.timestamp }}
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
 
-            > This is a development build. Not recommended for production use.
-          artifacts: "Zenith.phar"
-          prerelease: true
-          makeLatest: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run PHPUnit tests
+        run: ./vendor/bin/phpunit --bootstrap vendor/autoload.php --fail-on-warning tests/phpunit
