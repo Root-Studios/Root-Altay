@@ -56,4 +56,5 @@ final class BedrockDataFiles{
 	public const R16_TO_CURRENT_ITEM_MAP_JSON = BEDROCK_DATA_PATH . '/r16_to_current_item_map.json';
 	public const RECIPES_JSON = BEDROCK_DATA_PATH . '/recipes.json';
 	public const TRIM_DATA_JSON = BEDROCK_DATA_PATH . '/trim_data.json';
+	public const UPGRADE = BEDROCK_DATA_PATH . '/upgrade';
 }

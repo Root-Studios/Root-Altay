@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\utils\VillagerBiome;
+use pocketmine\entity\utils\VillagerProfession;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
@@ -32,21 +34,21 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 
 class Villager extends Living implements Ageable{
-	public const PROFESSION_FARMER = 0;
-	public const PROFESSION_LIBRARIAN = 1;
-	public const PROFESSION_PRIEST = 2;
-	public const PROFESSION_BLACKSMITH = 3;
-	public const PROFESSION_BUTCHER = 4;
 
-	private const TAG_PROFESSION = "Profession"; //TAG_Int
-
-	public static function getNetworkTypeId() : string{ return EntityIds::VILLAGER; }
+	private const TAG_PROFESSION = "Profession"; // TAG_Int
+	private const TAG_BIOME = "Biome"; // TAG_Int
 
 	private bool $baby = false;
-	private int $profession = self::PROFESSION_FARMER;
+
+	private VillagerProfession $profession = VillagerProfession::FARMER;
+	private VillagerBiome $biome = VillagerBiome::PLAINS;
+
+	public static function getNetworkTypeId() : string{
+		return EntityIds::VILLAGER_V2;
+	}
 
 	protected function getInitialSizeInfo() : EntitySizeInfo{
-		return new EntitySizeInfo(1.9, 0.6); //TODO: eye height??
+		return new EntitySizeInfo(1.9, 0.6);
 	}
 
 	public function getName() : string{
@@ -56,33 +58,48 @@ class Villager extends Living implements Ageable{
 	protected function initEntity(CompoundTag $nbt) : void{
 		parent::initEntity($nbt);
 
-		/** @var int $profession */
-		$profession = $nbt->getInt(self::TAG_PROFESSION, self::PROFESSION_FARMER);
+		$professionId = $nbt->getInt(self::TAG_PROFESSION, VillagerProfession::FARMER->value);
+		$biomeId = $nbt->getInt(self::TAG_BIOME, VillagerBiome::PLAINS->value);
 
-		if($profession > 4 || $profession < 0){
-			$profession = self::PROFESSION_FARMER;
-		}
+		$this->setProfession(
+			VillagerProfession::tryFrom($professionId) ?? VillagerProfession::FARMER
+		);
 
-		$this->setProfession($profession);
+		$this->setBiome(
+			VillagerBiome::tryFrom($biomeId) ?? VillagerBiome::PLAINS
+		);
 	}
 
 	public function saveNBT() : CompoundTag{
 		$nbt = parent::saveNBT();
-		$nbt->setInt(self::TAG_PROFESSION, $this->getProfession());
+
+		$nbt->setInt(self::TAG_PROFESSION, $this->profession->value);
+		$nbt->setInt(self::TAG_BIOME, $this->biome->value);
 
 		return $nbt;
 	}
 
-	/**
-	 * Sets the villager profession
-	 */
-	public function setProfession(int $profession) : void{
-		$this->profession = $profession; //TODO: validation
+	public function setProfession(VillagerProfession $profession) : void{
+		$this->profession = $profession;
 		$this->networkPropertiesDirty = true;
 	}
 
-	public function getProfession() : int{
+	public function getProfession() : VillagerProfession{
 		return $this->profession;
+	}
+
+	public function setBiome(VillagerBiome $biome) : void{
+		$this->biome = $biome;
+		$this->networkPropertiesDirty = true;
+	}
+
+	public function getBiome() : VillagerBiome{
+		return $this->biome;
+	}
+
+	public function setBaby(bool $baby = true) : void{
+		$this->baby = $baby;
+		$this->networkPropertiesDirty = true;
 	}
 
 	public function isBaby() : bool{
@@ -95,8 +112,17 @@ class Villager extends Living implements Ageable{
 
 	protected function syncNetworkData(EntityMetadataCollection $properties) : void{
 		parent::syncNetworkData($properties);
+
 		$properties->setGenericFlag(EntityMetadataFlags::BABY, $this->baby);
 
-		$properties->setInt(EntityMetadataProperties::VARIANT, $this->profession);
+		$properties->setInt(
+			EntityMetadataProperties::VARIANT,
+			$this->profession->value
+		);
+
+		$properties->setInt(
+			EntityMetadataProperties::MARK_VARIANT,
+			$this->biome->value
+		);
 	}
 }

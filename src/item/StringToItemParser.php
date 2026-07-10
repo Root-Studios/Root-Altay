@@ -39,6 +39,7 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\StringToTParser;
 use function array_keys;
 use function count;
+use function mb_strtoupper;
 use function strtolower;
 
 /**
@@ -1297,11 +1298,20 @@ final class StringToItemParser extends StringToTParser{
 			$result->register($prefix("splash_potion"), fn() => Items::SPLASH_POTION()->setType($potionType));
 			$result->register($prefix("lingering_potion"), fn() => Items::LINGERING_POTION()->setType($potionType));
 		}
+
+		$result->register("tropical_fish", fn() => Items::CLOWNFISH());
+
+		$result->register("bamboo_raft", fn() => Items::BAMBOO_RAFT());
+		$result->register("acacia_boat", fn() => Items::ACACIA_BOAT());
+		$result->register("birch_boat", fn() => Items::BIRCH_BOAT());
+		$result->register("oak_boat", fn() => Items::OAK_BOAT());
+		$result->register("dark_oak_boat", fn() => Items::DARK_OAK_BOAT());
+		$result->register("jungle_boat", fn() => Items::JUNGLE_BOAT());
+		$result->register("spruce_boat", fn() => Items::SPRUCE_BOAT());
 	}
 
 	private static function registerItems(self $result) : void{
 
-		$result->register("acacia_boat", fn() => Items::ACACIA_BOAT());
 		$result->register("acacia_hanging_sign", fn() => Items::ACACIA_HANGING_SIGN());
 		$result->register("amethyst_shard", fn() => Items::AMETHYST_SHARD());
 		$result->register("antidote", fn() => Items::MEDICINE()->setType(MedicineType::ANTIDOTE));
@@ -1318,7 +1328,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("beetroot_seed", fn() => Items::BEETROOT_SEEDS());
 		$result->register("beetroot_seeds", fn() => Items::BEETROOT_SEEDS());
 		$result->register("beetroot_soup", fn() => Items::BEETROOT_SOUP());
-		$result->register("birch_boat", fn() => Items::BIRCH_BOAT());
 		$result->register("birch_hanging_sign", fn() => Items::BIRCH_HANGING_SIGN());
 		$result->register("blaze_powder", fn() => Items::BLAZE_POWDER());
 		$result->register("blaze_rod", fn() => Items::BLAZE_ROD());
@@ -1417,7 +1426,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("copper_shovel", fn() => Items::COPPER_SHOVEL());
 		$result->register("copper_sword", fn() => Items::COPPER_SWORD());
 		$result->register("crimson_hanging_sign", fn() => Items::CRIMSON_HANGING_SIGN());
-		$result->register("dark_oak_boat", fn() => Items::DARK_OAK_BOAT());
 		$result->register("dark_oak_hanging_sign", fn() => Items::DARK_OAK_HANGING_SIGN());
 		$result->register("diamond", fn() => Items::DIAMOND());
 		$result->register("diamond_axe", fn() => Items::DIAMOND_AXE());
@@ -1505,7 +1513,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("iron_pickaxe", fn() => Items::IRON_PICKAXE());
 		$result->register("iron_shovel", fn() => Items::IRON_SHOVEL());
 		$result->register("iron_sword", fn() => Items::IRON_SWORD());
-		$result->register("jungle_boat", fn() => Items::JUNGLE_BOAT());
 		$result->register("jungle_hanging_sign", fn() => Items::JUNGLE_HANGING_SIGN());
 		$result->register("lapis_lazuli", fn() => Items::LAPIS_LAZULI());
 		$result->register("lava_bucket", fn() => Items::LAVA_BUCKET());
@@ -1549,7 +1556,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("netherite_sword", fn() => Items::NETHERITE_SWORD());
 		$result->register("netherstar", fn() => Items::NETHER_STAR());
 		$result->register("netherite_upgrade_smithing_template", fn() => Items::NETHERITE_UPGRADE_SMITHING_TEMPLATE());
-		$result->register("oak_boat", fn() => Items::OAK_BOAT());
 		$result->register("oak_hanging_sign", fn() => Items::OAK_HANGING_SIGN());
 		$result->register("painting", fn() => Items::PAINTING());
 		$result->register("pale_oak_hanging_sign", fn() => Items::PALE_OAK_HANGING_SIGN());
@@ -1627,7 +1633,6 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("spider_eye", fn() => Items::SPIDER_EYE());
 		$result->register("spire_armor_trim_smithing_template", fn() => Items::SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$result->register("splash_potion", fn() => Items::SPLASH_POTION());
-		$result->register("spruce_boat", fn() => Items::SPRUCE_BOAT());
 		$result->register("spruce_hanging_sign", fn() => Items::SPRUCE_HANGING_SIGN());
 		$result->register("spyglass", fn() => Items::SPYGLASS());
 		$result->register("squid_spawn_egg", fn() => Items::SQUID_SPAWN_EGG());

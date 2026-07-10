@@ -30,6 +30,8 @@ use pocketmine\block\utils\SignText;
 use pocketmine\entity\Attribute;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\entity\Living;
+use pocketmine\entity\object\Boat;
+use pocketmine\entity\Rideable;
 use pocketmine\event\player\PlayerEditBookEvent;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
@@ -221,6 +223,7 @@ class InGamePacketHandler extends PacketHandler{
 		}
 
 		$inputFlags = $packet->getInputFlags();
+		$dismounted = false;
 		if($this->lastPlayerAuthInputFlags === null || !$inputFlags->equals($this->lastPlayerAuthInputFlags)){
 			$this->lastPlayerAuthInputFlags = $inputFlags;
 
@@ -244,6 +247,13 @@ class InGamePacketHandler extends PacketHandler{
 			if($inputFlags->get(PlayerAuthInputFlags::START_JUMPING)){
 				$this->player->jump();
 			}
+			if($inputFlags->get(PlayerAuthInputFlags::START_SNEAKING) || ($this->player->getRidingVehicle() !== null && $inputFlags->get(PlayerAuthInputFlags::SNEAKING))){
+				//sneaking is how you climb out of a vehicle. A server-steered mob rider may report only the held SNEAKING
+				//flag (not the transient START_SNEAKING), so while riding, treat held sneak as a dismount intent too.
+				Rideable::dismountFrom($this->player);
+				$dismounted = true;
+				$this->lastPlayerAuthInputPosition = $rawPos;
+			}
 			if($inputFlags->get(PlayerAuthInputFlags::START_USING_ITEM)){
 				if(!$this->player->shouldIgnoreChargeableClickAir()){
 					$this->player->clearAwaitingConsumableRelease();
@@ -254,8 +264,13 @@ class InGamePacketHandler extends PacketHandler{
 				$this->player->missSwing();
 			}
 		}
-
-		if(!$this->forceMoveSync && $hasMoved){
+		$ridingVehicle = $this->player->getRidingVehicle();
+		if($ridingVehicle !== null && $ridingVehicle->handleVehicleInput($this->player, $packet)){
+			$this->lastPlayerAuthInputPosition = $rawPos;
+			if(!$this->forceMoveSync && $hasMoved){
+				$this->player->followVehicle($ridingVehicle->getRiderTrackingPosition($newPos));
+			}
+		}elseif(!$dismounted && !$this->forceMoveSync && $hasMoved){
 			$this->lastPlayerAuthInputPosition = $rawPos;
 			//TODO: this packet has WAYYYYY more useful information that we're not using
 			$this->player->handleMovement($newPos);
@@ -621,6 +636,12 @@ class InGamePacketHandler extends PacketHandler{
 			case UseItemOnEntityTransactionData::ACTION_ITEM_INTERACT:
 				if($target === $this->player){
 					return $this->handleRightClickItemUse();
+				}
+				//Bedrock sends this action for a left-click on a boat. Treating it as a generic interaction
+				//mounts the player instead of damaging the boat.
+				if($target instanceof Boat){
+					$this->player->attackEntity($target);
+					return true;
 				}
 				if($target instanceof Living){
 					$this->player->attackEntity($target);

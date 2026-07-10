@@ -46,6 +46,8 @@ use pocketmine\entity\Location;
 use pocketmine\entity\NeverSavedWithChunkEntity;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
+use pocketmine\entity\projectile\FishingHook;
+use pocketmine\entity\RideableEntity;
 use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -293,6 +295,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected bool $blockCollision = true;
 	protected bool $flying = false;
 	protected bool $sneakPressed = false;
+	private ?FishingHook $fishingHook = null;
 
 	protected float $flightSpeedMultiplier = self::DEFAULT_FLIGHT_SPEED_MULTIPLIER;
 
@@ -318,6 +321,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected array $forms = [];
 
 	protected \Logger $logger;
+
+	protected ?RideableEntity $ridingVehicle = null;
 
 	protected ?SurvivalBlockBreakHandler $blockBreakHandler = null;
 
@@ -1314,6 +1319,27 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		return $this->sneakPressed;
 	}
 
+	public function getFishingHook() : ?FishingHook{
+		if($this->fishingHook !== null && ($this->fishingHook->isClosed() || $this->fishingHook->isFlaggedForDespawn())){
+			$this->fishingHook = null;
+		}
+		return $this->fishingHook;
+	}
+
+	public function setFishingHook(?FishingHook $fishingHook) : void{
+		if($fishingHook !== null && $fishingHook->getOwningEntity() !== $this){
+			throw new \InvalidArgumentException("Fishing hook must be owned by this player");
+		}
+		$this->fishingHook = $fishingHook;
+	}
+
+	private function removeFishingHook() : void{
+		if(($hook = $this->getFishingHook()) !== null){
+			$hook->flagForDespawn();
+		}
+		$this->fishingHook = null;
+	}
+
 	/**
 	 * TODO: make this a dynamic ability instead of being hardcoded
 	 */
@@ -1387,6 +1413,33 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$this->actuallyHandleMovement($newPos);
 		}finally{
 			Timings::$playerMove->stopTiming();
+		}
+	}
+
+	public function followVehicle(Vector3 $pos) : void{
+		if(!$this->spawned || !$this->isAlive() || $this->location->equals($pos)){
+			return;
+		}
+		$this->setPosition($pos);
+		$this->lastLocation = $this->location->asLocation();
+		if($this->nextChunkOrderRun > 20){
+			$this->nextChunkOrderRun = 20;
+		}
+	}
+
+	public function getRidingVehicle() : ?RideableEntity{
+		return $this->ridingVehicle;
+	}
+
+	public function setRidingVehicle(?RideableEntity $vehicle) : void{
+		$this->ridingVehicle = $vehicle;
+	}
+
+	private function dismountVehicle() : void{
+		if($this->ridingVehicle?->getRider() === $this){
+			$this->ridingVehicle->dismountRider(syncPosition: false);
+		}elseif($this->ridingVehicle?->getPassenger() === $this){
+			$this->ridingVehicle->dismountPassenger(false);
 		}
 	}
 
@@ -2439,6 +2492,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		//prevent the player receiving their own disconnect message
 		$this->server->unsubscribeFromAllBroadcastChannels($this);
 
+		$this->dismountVehicle();
+		$this->removeFishingHook();
 		$this->removeCurrentWindow();
 
 		$ev = new PlayerQuitEvent($this, $quitMessage ?? $this->getLeaveMessage(), $reason);
@@ -2558,6 +2613,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	protected function onDeath() : void{
+		$this->dismountVehicle();
+		$this->removeFishingHook();
+
 		//Crafting grid must always be evacuated even if keep-inventory is true. This dumps the contents into the
 		//main inventory and drops the rest on the ground.
 		$this->removeCurrentWindow();
@@ -2759,6 +2817,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	public function teleport(Vector3 $pos, ?float $yaw = null, ?float $pitch = null) : bool{
+		$this->dismountVehicle();
+		$this->removeFishingHook();
 		if(parent::teleport($pos, $yaw, $pitch)){
 
 			$this->removeCurrentWindow();

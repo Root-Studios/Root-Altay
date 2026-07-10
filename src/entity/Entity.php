@@ -1618,7 +1618,7 @@ abstract class Entity{
 	 *
 	 * WARNING: Entities are unusable after this has been executed!
 	 */
-	final public function close() : void{
+	public function close() : void{
 		if($this->closeInFlight){
 			return;
 		}

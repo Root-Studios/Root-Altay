@@ -278,6 +278,25 @@ final class VanillaEnchantmentsInputs extends RegistrySource{
 			fn(int $level) : int => 10 * $level,
 			5
 		));
+
+		self::register("LUCK_OF_THE_SEA", new Enchantment(
+			KnownTranslationFactory::enchantment_lootBonusFishing(),
+			Rarity::RARE,
+			0,
+			0,
+			3,
+			fn(int $level) : int => 9 * ($level - 1) + 15,
+			50
+		));
+		self::register("LURE", new Enchantment(
+			KnownTranslationFactory::enchantment_fishingSpeed(),
+			Rarity::RARE,
+			0,
+			0,
+			3,
+			fn(int $level) : int => 9 * ($level - 1) + 15,
+			50
+		));
 	}
 
 	protected function register(string $name, Enchantment $member) : void{

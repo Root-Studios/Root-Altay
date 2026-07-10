@@ -60,6 +60,8 @@ final class EnchantmentIdMap{
 		$this->register(EnchantmentIds::PUNCH, VanillaEnchantments::PUNCH());
 		$this->register(EnchantmentIds::FLAME, VanillaEnchantments::FLAME());
 		$this->register(EnchantmentIds::INFINITY, VanillaEnchantments::INFINITY());
+		$this->register(EnchantmentIds::LUCK_OF_THE_SEA, VanillaEnchantments::LUCK_OF_THE_SEA());
+		$this->register(EnchantmentIds::LURE, VanillaEnchantments::LURE());
 
 		$this->register(EnchantmentIds::MENDING, VanillaEnchantments::MENDING());
 
