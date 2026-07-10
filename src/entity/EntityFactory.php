@@ -96,6 +96,10 @@ final class EntityFactory{
 			return new Arrow(Helper::parseLocation($nbt, $world), null, $nbt->getByte(Arrow::TAG_CRIT, 0) === 1, $nbt);
 		}, ['Arrow', 'minecraft:arrow']);
 
+		$this->register(ArmorStand::class, function(World $world, CompoundTag $nbt) : ArmorStand{
+			return new ArmorStand(Helper::parseLocation($nbt, $world), $nbt);
+		}, ['ArmorStand', 'minecraft:armor_stand']);
+
 		$this->register(Egg::class, function(World $world, CompoundTag $nbt) : Egg{
 			return new Egg(Helper::parseLocation($nbt, $world), null, $nbt);
 		}, ['Egg', 'minecraft:egg']);

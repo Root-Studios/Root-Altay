@@ -1047,6 +1047,19 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("sandstone_stairs", fn() => Blocks::SANDSTONE_STAIRS());
 		$result->registerBlock("sandstone_wall", fn() => Blocks::SANDSTONE_WALL());
 		$result->registerBlock("sapling", fn() => Blocks::OAK_SAPLING());
+		$result->registerBlock("acacia_shelf", fn() => Blocks::ACACIA_SHELF());
+		$result->registerBlock("bamboo_shelf", fn() => Blocks::BAMBOO_SHELF());
+		$result->registerBlock("birch_shelf", fn() => Blocks::BIRCH_SHELF());
+		$result->registerBlock("cherry_shelf", fn() => Blocks::CHERRY_SHELF());
+		$result->registerBlock("crimson_shelf", fn() => Blocks::CRIMSON_SHELF());
+		$result->registerBlock("dark_oak_shelf", fn() => Blocks::DARK_OAK_SHELF());
+		$result->registerBlock("jungle_shelf", fn() => Blocks::JUNGLE_SHELF());
+		$result->registerBlock("mangrove_shelf", fn() => Blocks::MANGROVE_SHELF());
+		$result->registerBlock("oak_shelf", fn() => Blocks::OAK_SHELF());
+		$result->registerBlock("pale_oak_shelf", fn() => Blocks::PALE_OAK_SHELF());
+		$result->registerBlock("spruce_shelf", fn() => Blocks::SPRUCE_SHELF());
+		$result->registerBlock("warped_shelf", fn() => Blocks::WARPED_SHELF());
+		$result->registerBlock("scaffolding", fn() => Blocks::SCAFFOLDING());
 		$result->registerBlock("sculk", fn() => Blocks::SCULK());
 		$result->registerBlock("sea_lantern", fn() => Blocks::SEA_LANTERN());
 		$result->registerBlock("sea_pickle", fn() => Blocks::SEA_PICKLE());
@@ -1295,6 +1308,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("apple", fn() => Items::APPLE());
 		$result->register("apple_enchanted", fn() => Items::ENCHANTED_GOLDEN_APPLE());
 		$result->register("appleenchanted", fn() => Items::ENCHANTED_GOLDEN_APPLE());
+		$result->register("armor_stand", fn() => Items::ARMOR_STAND());
 		$result->register("arrow", fn() => Items::ARROW());
 		$result->register("baked_potato", fn() => Items::BAKED_POTATO());
 		$result->register("baked_potatoes", fn() => Items::BAKED_POTATO());

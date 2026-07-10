@@ -54,6 +54,7 @@ use pocketmine\block\tile\MobHead as TileMobHead;
 use pocketmine\block\tile\MonsterSpawner as TileMonsterSpawner;
 use pocketmine\block\tile\NormalFurnace as TileNormalFurnace;
 use pocketmine\block\tile\Note as TileNote;
+use pocketmine\block\tile\Shelf as ShelfTile;
 use pocketmine\block\tile\ShulkerBox as TileShulkerBox;
 use pocketmine\block\tile\Sign as TileSign;
 use pocketmine\block\tile\Smoker as TileSmoker;
@@ -609,6 +610,7 @@ final class VanillaBlocksInputs extends RegistrySource{
 		self::register("muddy_mangrove_roots", fn(BID $id) => new SimplePillar($id, "Muddy Mangrove Roots", new Info(BreakInfo::shovel(0.7), [Tags::MUD])));
 		self::register("froglight", fn(BID $id) => new Froglight($id, "Froglight", new Info(new BreakInfo(0.3))));
 		self::register("sculk", fn(BID $id) => new Sculk($id, "Sculk", new Info(new BreakInfo(0.2, ToolType::HOE))));
+		self::register("scaffolding", fn(BID $id) => new Scaffolding($id, "Scaffolding", new Info(BreakInfo::instant())));
 		self::register("reinforced_deepslate", fn(BID $id) => new class($id, "Reinforced Deepslate", new Info(new BreakInfo(55.0, ToolType::NONE, 0, 6000.0))) extends Opaque{
 			public function getDropsForCompatibleTool(Item $item) : array{
 				return [];
@@ -631,6 +633,7 @@ final class VanillaBlocksInputs extends RegistrySource{
 		self::registerOres();
 		self::registerWoodenBlocks();
 		self::registerCauldronBlocks();
+		self::registerShelf();
 	}
 
 	/**
@@ -1176,5 +1179,32 @@ final class VanillaBlocksInputs extends RegistrySource{
 		self::register("water_cauldron", fn(BID $id) => new WaterCauldron($id, "Water Cauldron", $cauldronBreakInfo), TileCauldron::class);
 		self::register("lava_cauldron", fn(BID $id) => new LavaCauldron($id, "Lava Cauldron", $cauldronBreakInfo), TileCauldron::class);
 		self::register("potion_cauldron", fn(BID $id) => new PotionCauldron($id, "Potion Cauldron", $cauldronBreakInfo), TileCauldron::class);
+	}
+
+	private function registerShelf() : void{
+		foreach([
+			"oak" => "Oak",
+			"spruce" => "Spruce",
+			"birch" => "Birch",
+			"jungle" => "Jungle",
+			"acacia" => "Acacia",
+			"dark_oak" => "Dark Oak",
+			"mangrove" => "Mangrove",
+			"cherry" => "Cherry",
+			"pale_oak" => "Pale Oak",
+			"bamboo" => "Bamboo",
+			"crimson" => "Crimson",
+			"warped" => "Warped",
+		] as $key => $label){
+			self::register(
+				"{$key}_shelf",
+				fn(BID $id) => new Shelf(
+					$id,
+					"{$label} Shelf",
+					new Info(BreakInfo::axe(2.0, blastResistance: 15.0))
+				),
+				ShelfTile::class
+			);
+		}
 	}
 }

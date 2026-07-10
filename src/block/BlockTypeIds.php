@@ -881,8 +881,21 @@ final class BlockTypeIds{
 	public const CINNABAR_SLAB = 10850;
 	public const CINNABAR_STAIRS = 10851;
 	public const CINNABAR_WALL = 10852;
+	public const SCAFFOLDING = 10853;
+	public const ACACIA_SHELF = 10854;
+	public const BAMBOO_SHELF = 10855;
+	public const BIRCH_SHELF = 10856;
+	public const CHERRY_SHELF = 10857;
+	public const CRIMSON_SHELF = 10858;
+	public const DARK_OAK_SHELF = 10859;
+	public const JUNGLE_SHELF = 10860;
+	public const MANGROVE_SHELF = 10861;
+	public const OAK_SHELF = 10862;
+	public const PALE_OAK_SHELF = 10863;
+	public const SPRUCE_SHELF = 10864;
+	public const WARPED_SHELF = 10865;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10853;
+	public const FIRST_UNUSED_BLOCK_ID = 10866;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 
