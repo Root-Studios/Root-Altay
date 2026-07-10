@@ -25,12 +25,14 @@ namespace pocketmine\network\mcpe\handler;
 
 use pocketmine\block\inventory\EnchantInventory;
 use pocketmine\inventory\Inventory;
+use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\CreateItemAction;
 use pocketmine\inventory\transaction\action\DestroyItemAction;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\TransactionBuilder;
 use pocketmine\inventory\transaction\TransactionBuilderInventory;
 use pocketmine\item\Durable;
@@ -61,6 +63,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Utils;
 use function array_key_first;
 use function count;
+use function intdiv;
 use function spl_object_id;
 
 class ItemStackRequestExecutor{
@@ -295,13 +298,48 @@ class ItemStackRequestExecutor{
 	 * @throws ItemStackRequestProcessException
 	 */
 	private function assertDoingCrafting() : void{
-		if(!$this->specialTransaction instanceof CraftingTransaction && !$this->specialTransaction instanceof EnchantingTransaction){
+		if(
+			!$this->specialTransaction instanceof CraftingTransaction &&
+			!$this->specialTransaction instanceof EnchantingTransaction &&
+			!$this->specialTransaction instanceof TradingTransaction
+		){
 			if($this->specialTransaction === null){
 				throw new ItemStackRequestProcessException("Expected CraftRecipe or CraftRecipeAuto action to precede this action");
 			}else{
 				throw new ItemStackRequestProcessException("A different special transaction is already in progress");
 			}
 		}
+	}
+
+	/**
+	 * @throws ItemStackRequestProcessException
+	 */
+	private function beginTrading(TradeInventory $inventory, int $recipeId) : void{
+		if($this->specialTransaction !== null){
+			throw new ItemStackRequestProcessException("Another special transaction is already in progress");
+		}
+		if($recipeId < 1 || ($recipe = $inventory->getRecipeData()->getRecipe($recipeId - 1)) === null){
+			throw new ItemStackRequestProcessException("No such trade recipe ID: $recipeId");
+		}
+
+		$outputTakeCount = $this->getCreatedOutputTakeCount();
+		if($outputTakeCount === 0){
+			return;
+		}
+
+		$sell = $recipe->getSell();
+		$sellCount = $sell->getCount();
+		if($outputTakeCount % $sellCount !== 0){
+			throw new ItemStackRequestProcessException("Trade output count is not a multiple of the recipe output");
+		}
+		$repetitions = intdiv($outputTakeCount, $sellCount);
+		if($repetitions > 256){
+			throw new ItemStackRequestProcessException("Cannot execute a trade more than 256 times in one request");
+		}
+
+		$this->specialTransaction = new TradingTransaction($this->player, $inventory->getRecipeData(), $recipe, $repetitions);
+		$sell->setCount($outputTakeCount);
+		$this->setNextCreatedItem($sell);
 	}
 
 	/**
@@ -348,11 +386,18 @@ class ItemStackRequestExecutor{
 					$this->specialTransaction = new EnchantingTransaction($this->player, $option, $optionId + 1);
 					$this->setNextCreatedItem($window->getOutput($optionId));
 				}
+			}elseif($window instanceof TradeInventory){
+				$this->beginTrading($window, $action->getRecipeId());
 			}else{
 				$this->beginCrafting($action->getRecipeId(), $action->getRepetitions());
 			}
 		}elseif($action instanceof CraftRecipeAutoStackRequestAction){
-			$this->beginCrafting($action->getRecipeId(), $action->getRepetitions());
+			$window = $this->player->getCurrentWindow();
+			if($window instanceof TradeInventory){
+				$this->beginTrading($window, $action->getRecipeId());
+			}else{
+				$this->beginCrafting($action->getRecipeId(), $action->getRepetitions());
+			}
 		}elseif($action instanceof CraftingConsumeInputStackRequestAction){
 			$this->assertDoingCrafting();
 			$this->removeItemFromSlot($action->getSource(), $action->getCount()); //output discarded - we allow CraftingTransaction to verify the balance
@@ -380,6 +425,25 @@ class ItemStackRequestExecutor{
 		}else{
 			throw new ItemStackRequestProcessException("Unhandled item stack request action");
 		}
+	}
+
+	private function isCreatedOutputSlot(ItemStackRequestSlotInfo $slotInfo) : bool{
+		return $slotInfo->getContainerName()->getContainerId() === ContainerUIIds::CREATED_OUTPUT &&
+			$slotInfo->getSlotId() === UIInventorySlotOffset::CREATED_ITEM_OUTPUT;
+	}
+
+	private function getCreatedOutputTakeCount() : int{
+		$count = 0;
+		foreach($this->request->getActions() as $action){
+			//Shift-click sends PlaceStackRequestAction when moving the trade result directly to the inventory.
+			if(
+				($action instanceof TakeStackRequestAction || $action instanceof PlaceStackRequestAction) &&
+				$this->isCreatedOutputSlot($action->getSource())
+			){
+				$count += $action->getCount();
+			}
+		}
+		return $count;
 	}
 
 	/**

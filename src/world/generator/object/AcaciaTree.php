@@ -29,7 +29,6 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 use pocketmine\world\BlockTransaction;
 use function abs;
-use function array_rand;
 
 final class AcaciaTree extends Tree{
 	private const MIN_HEIGHT = 5;
@@ -60,7 +59,7 @@ final class AcaciaTree extends Tree{
 			$transaction->addBlockAt($x, $y + $yy, $z, $this->trunkBlock);
 		}
 
-		$mainBranchFacing = Facing::HORIZONTAL[array_rand(Facing::HORIZONTAL)];
+		$mainBranchFacing = Facing::HORIZONTAL[$random->nextBoundedInt(4)];
 
 		//this branch may grow a second trunk if the diagonal length is less than the max length
 		$this->mainBranchTip = $this->placeBranch(
@@ -71,7 +70,7 @@ final class AcaciaTree extends Tree{
 			$trunkHeight - $firstBranchHeight
 		);
 
-		$secondBranchFacing = Facing::HORIZONTAL[array_rand(Facing::HORIZONTAL)];
+		$secondBranchFacing = Facing::HORIZONTAL[$random->nextBoundedInt(4)];
 		if($secondBranchFacing !== $mainBranchFacing){
 			$secondBranchLength = $random->nextRange(1, 3);
 			$this->secondBranchTip = $this->placeBranch(

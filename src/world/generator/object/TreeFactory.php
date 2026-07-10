@@ -33,10 +33,14 @@ final class TreeFactory{
 	 */
 	public static function get(Random $random, ?TreeType $type = null) : ?Tree{
 		return match($type){
-			null, TreeType::OAK => new OakTree(), //TODO: big oak has a 1/10 chance
-			TreeType::SPRUCE => new SpruceTree(),
-			TreeType::JUNGLE => new JungleTree(),
+			null, TreeType::OAK => $random->nextBoundedInt(10) === 0 ? new BigOakTree() : new OakTree(),
+			TreeType::SPRUCE => $random->nextBoundedInt(8) === 0 ? new BigSpruceTree() : new SpruceTree(),
+			TreeType::JUNGLE => $random->nextBoundedInt(10) === 0 ? new BigJungleTree() : new JungleTree(),
 			TreeType::ACACIA => new AcaciaTree(),
+			TreeType::DARK_OAK => new DarkOakTree(),
+			TreeType::CHERRY => new CherryTree(),
+			TreeType::MANGROVE => new MangroveTree(),
+			TreeType::PALE_OAK => new PaleOakTree(),
 			TreeType::BIRCH => new BirchTree($random->nextBoundedInt(39) === 0),
 			TreeType::AZALEA => new AzaleaTree(),
 			TreeType::CRIMSON => new NetherTree(VanillaBlocks::CRIMSON_STEM(), VanillaBlocks::NETHER_WART_BLOCK(), VanillaBlocks::SHROOMLIGHT(), ($random->nextBoundedInt(9) + 4) * ($random->nextBoundedInt(12) === 0 ? 2 : 1), hasVines: true, huge: $random->nextFloat() < 0.06),

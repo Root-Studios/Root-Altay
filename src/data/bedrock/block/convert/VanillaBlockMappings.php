@@ -64,6 +64,7 @@ use pocketmine\block\Leaves;
 use pocketmine\block\Lectern;
 use pocketmine\block\Lever;
 use pocketmine\block\Light;
+use pocketmine\block\MangrovePropagule;
 use pocketmine\block\MobHead;
 use pocketmine\block\NetherPortal;
 use pocketmine\block\NetherVines;
@@ -560,13 +561,20 @@ final class VanillaBlockMappings{
 		foreach([
 			Ids::ACACIA_SAPLING => Blocks::ACACIA_SAPLING(),
 			Ids::BIRCH_SAPLING => Blocks::BIRCH_SAPLING(),
+			Ids::CHERRY_SAPLING => Blocks::CHERRY_SAPLING(),
 			Ids::DARK_OAK_SAPLING => Blocks::DARK_OAK_SAPLING(),
 			Ids::JUNGLE_SAPLING => Blocks::JUNGLE_SAPLING(),
 			Ids::OAK_SAPLING => Blocks::OAK_SAPLING(),
+			Ids::PALE_OAK_SAPLING => Blocks::PALE_OAK_SAPLING(),
 			Ids::SPRUCE_SAPLING => Blocks::SPRUCE_SAPLING(),
 		] as $id => $block){
 			$reg->mapModel(Model::create($block, $id)->properties($properties));
 		}
+		$reg->mapModel(Model::create(Blocks::MANGROVE_PROPAGULE(), Ids::MANGROVE_PROPAGULE)->properties([
+			new BoolProperty(StateNames::AGE_BIT, fn(MangrovePropagule $b) => $b->isReady(), fn(MangrovePropagule $b, bool $v) => $b->setReady($v)),
+			new BoolProperty(StateNames::HANGING, fn(MangrovePropagule $b) => $b->isHanging(), fn(MangrovePropagule $b, bool $v) => $b->setHanging($v)),
+			new IntProperty(StateNames::PROPAGULE_STAGE, 0, 4, fn(MangrovePropagule $b) => $b->getStage(), fn(MangrovePropagule $b, int $v) => $b->setStage($v)),
+		]));
 	}
 
 	private static function registerPlantMappings(BlockSerializerDeserializerRegistrar $reg, CommonProperties $commonProperties) : void{

@@ -513,7 +513,10 @@ final class VanillaBlocksInputs extends RegistrySource{
 
 		foreach(SaplingType::cases() as $saplingType){
 			$name = $saplingType->getDisplayName();
-			self::register(strtolower($saplingType->name) . "_sapling", fn(BID $id) => new Sapling($id, $name . " Sapling", $saplingTypeInfo, $saplingType));
+			self::register($saplingType->getBlockName(), fn(BID $id) => $saplingType === SaplingType::MANGROVE ?
+				new MangrovePropagule($id, $name, $saplingTypeInfo) :
+				new Sapling($id, $name . " Sapling", $saplingTypeInfo, $saplingType)
+			);
 		}
 		foreach(LeavesType::cases() as $leavesType){
 			$name = $leavesType->getDisplayName();

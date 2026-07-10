@@ -894,8 +894,10 @@ final class BlockTypeIds{
 	public const PALE_OAK_SHELF = 10863;
 	public const SPRUCE_SHELF = 10864;
 	public const WARPED_SHELF = 10865;
+	public const MANGROVE_PROPAGULE = 10866;
+	public const PALE_OAK_SAPLING = 10867;
 
-	public const FIRST_UNUSED_BLOCK_ID = 10866;
+	public const FIRST_UNUSED_BLOCK_ID = 10868;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_BLOCK_ID;
 

@@ -25,6 +25,7 @@ namespace pocketmine\block\utils;
 
 use pocketmine\utils\LegacyEnumShimTrait;
 use pocketmine\world\generator\object\TreeType;
+use function strtolower;
 
 /**
  * TODO: These tags need to be removed once we get rid of LegacyEnumShimTrait (PM6)
@@ -32,9 +33,12 @@ use pocketmine\world\generator\object\TreeType;
  *
  * @method static SaplingType ACACIA()
  * @method static SaplingType BIRCH()
+ * @method static SaplingType CHERRY()
  * @method static SaplingType DARK_OAK()
  * @method static SaplingType JUNGLE()
+ * @method static SaplingType MANGROVE()
  * @method static SaplingType OAK()
+ * @method static SaplingType PALE_OAK()
  * @method static SaplingType SPRUCE()
  */
 enum SaplingType{
@@ -46,7 +50,9 @@ enum SaplingType{
 	case JUNGLE;
 	case ACACIA;
 	case DARK_OAK;
-	//TODO: cherry
+	case CHERRY;
+	case MANGROVE;
+	case PALE_OAK;
 
 	public function getTreeType() : TreeType{
 		return match($this){
@@ -56,10 +62,21 @@ enum SaplingType{
 			self::JUNGLE => TreeType::JUNGLE,
 			self::ACACIA => TreeType::ACACIA,
 			self::DARK_OAK => TreeType::DARK_OAK,
+			self::CHERRY => TreeType::CHERRY,
+			self::MANGROVE => TreeType::MANGROVE,
+			self::PALE_OAK => TreeType::PALE_OAK,
+		};
+	}
+
+	/** Returns the canonical Bedrock block name for this growth block. */
+	public function getBlockName() : string{
+		return match($this){
+			self::MANGROVE => "mangrove_propagule",
+			default => strtolower($this->name) . "_sapling",
 		};
 	}
 
 	public function getDisplayName() : string{
-		return $this->getTreeType()->getDisplayName();
+		return $this === self::MANGROVE ? "Mangrove Propagule" : $this->getTreeType()->getDisplayName();
 	}
 }

@@ -282,6 +282,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("cinnabar_wall", fn() => Blocks::CINNABAR_WALL());
 		$result->registerBlock("chorus_flower", fn() => Blocks::CHORUS_FLOWER());
 		$result->registerBlock("chorus_plant", fn() => Blocks::CHORUS_PLANT());
+		$result->registerBlock("cherry_sapling", fn() => Blocks::CHERRY_SAPLING());
 		$result->registerBlock("clay_block", fn() => Blocks::CLAY());
 		$result->registerBlock("coal_block", fn() => Blocks::COAL());
 		$result->registerBlock("coal_ore", fn() => Blocks::COAL_ORE());
@@ -830,6 +831,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("mangrove_log", fn() => Blocks::MANGROVE_LOG()->setStripped(false));
 		$result->registerBlock("mangrove_planks", fn() => Blocks::MANGROVE_PLANKS());
 		$result->registerBlock("mangrove_pressure_plate", fn() => Blocks::MANGROVE_PRESSURE_PLATE());
+		$result->registerBlock("mangrove_propagule", fn() => Blocks::MANGROVE_PROPAGULE());
 		$result->registerBlock("mangrove_roots", fn() => Blocks::MANGROVE_ROOTS());
 		$result->registerBlock("mangrove_sign", fn() => Blocks::MANGROVE_SIGN());
 		$result->registerBlock("mangrove_slab", fn() => Blocks::MANGROVE_SLAB());
@@ -918,6 +920,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("pale_oak_log", fn() => Blocks::PALE_OAK_LOG()->setStripped(false));
 		$result->registerBlock("pale_oak_planks", fn() => Blocks::PALE_OAK_PLANKS());
 		$result->registerBlock("pale_oak_pressure_plate", fn() => Blocks::PALE_OAK_PRESSURE_PLATE());
+		$result->registerBlock("pale_oak_sapling", fn() => Blocks::PALE_OAK_SAPLING());
 		$result->registerBlock("pale_oak_sign", fn() => Blocks::PALE_OAK_SIGN());
 		$result->registerBlock("pale_oak_slab", fn() => Blocks::PALE_OAK_SLAB());
 		$result->registerBlock("pale_oak_stairs", fn() => Blocks::PALE_OAK_STAIRS());

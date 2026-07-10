@@ -38,6 +38,7 @@ use pocketmine\crafting\FurnaceType;
 use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\entity\object\BoatInventory;
 use pocketmine\inventory\Inventory;
+use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\item\enchantment\EnchantingOption;
@@ -62,6 +63,7 @@ use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
 use pocketmine\network\mcpe\protocol\types\inventory\NetworkInventoryAction;
 use pocketmine\network\mcpe\protocol\types\inventory\UIInventorySlotOffset;
 use pocketmine\network\mcpe\protocol\types\inventory\WindowTypes;
+use pocketmine\network\mcpe\protocol\UpdateTradePacket;
 use pocketmine\network\PacketHandlingException;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -332,6 +334,7 @@ class InventoryManager{
 			$inventory instanceof CraftingTableInventory => UIInventorySlotOffset::CRAFTING3X3_INPUT,
 			$inventory instanceof CartographyTableInventory => UIInventorySlotOffset::CARTOGRAPHY_TABLE,
 			$inventory instanceof SmithingTableInventory => UIInventorySlotOffset::SMITHING_TABLE,
+			$inventory instanceof TradeInventory => UIInventorySlotOffset::TRADE2_INGREDIENT,
 			default => null,
 		};
 	}
@@ -351,7 +354,7 @@ class InventoryManager{
 				if($pks !== null){
 					$windowType = null;
 					foreach($pks as $pk){
-						if($pk instanceof ContainerOpenPacket){
+						if($pk instanceof ContainerOpenPacket || $pk instanceof UpdateTradePacket){
 							//workaround useless bullshit in 1.21 - ContainerClose requires a type now for some reason
 							$windowType = $pk->windowType;
 						}
@@ -400,6 +403,9 @@ class InventoryManager{
 		}
 		if($inv instanceof BoatInventory){
 			return [ContainerOpenPacket::entityInv($id, WindowTypes::CONTAINER, $inv->getHolder()->getId())];
+		}
+		if($inv instanceof TradeInventory){
+			return $inv->createInventoryOpenPackets($id);
 		}
 		return null;
 	}
