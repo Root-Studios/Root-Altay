@@ -36,7 +36,6 @@ use pocketmine\world\sound\BlockPunchSound;
 use function abs;
 
 final class SurvivalBlockBreakHandler{
-
 	public const DEFAULT_FX_INTERVAL_TICKS = 5;
 
 	private int $fxTicker = 0;
@@ -44,12 +43,12 @@ final class SurvivalBlockBreakHandler{
 	private float $breakProgress = 0;
 
 	public function __construct(
-		private Player $player,
-		private Vector3 $blockPos,
-		private Block $block,
+		private readonly Player $player,
+		private readonly Vector3 $blockPos,
+		private readonly Block $block,
 		private int $targetedFace,
-		private int $maxPlayerDistance,
-		private int $fxTickInterval = self::DEFAULT_FX_INTERVAL_TICKS
+		private readonly int $maxPlayerDistance,
+		private readonly int $fxTickInterval = self::DEFAULT_FX_INTERVAL_TICKS
 	){
 		$this->breakSpeed = $this->calculateBreakProgressPerTick();
 		if($this->breakSpeed > 0){
@@ -64,6 +63,9 @@ final class SurvivalBlockBreakHandler{
 	 * Returns the calculated break speed as percentage progress per game tick.
 	 */
 	private function calculateBreakProgressPerTick() : float{
+		if($this->block->getBreakInfo()->breaksInstantly()) {
+			return 1.0;
+		}
 		if(!$this->block->getBreakInfo()->isBreakable()){
 			return 0.0;
 		}
