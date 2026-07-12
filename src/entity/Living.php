@@ -47,6 +47,7 @@ use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
+use pocketmine\item\Mace;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\math\VoxelRayTrace;
@@ -421,6 +422,15 @@ abstract class Living extends Entity{
 		return $total;
 	}
 
+	public function getToughnessPoints() : int{
+		$total = 0;
+		foreach($this->armorInventory->getContents() as $item){
+			$total += $item->getToughnessPoints();
+		}
+
+		return $total;
+	}
+
 	/**
 	 * Returns the highest level of the specified enchantment on any armour piece that the entity is currently wearing.
 	 */
@@ -453,9 +463,24 @@ abstract class Living extends Entity{
 			$source->setModifier(-$this->lastDamageCause->getBaseDamage(), EntityDamageEvent::MODIFIER_PREVIOUS_DAMAGE_COOLDOWN);
 		}
 		if($source->canBeReducedByArmor()){
-			//MCPE uses the same system as PC did pre-1.9
-			$effectiveArmorPoints = $this->getArmorPoints() * (1.0 - $source->getArmorEffectivenessReduction());
-			$source->setModifier(-$source->getFinalDamage() * $effectiveArmorPoints * 0.04, EntityDamageEvent::MODIFIER_ARMOR);
+			$armor = $this->getArmorPoints();
+			$toughness = $this->getToughnessPoints();
+
+			$damage = $source->getFinalDamage();
+
+			$armorCalcCap = 60.0;
+			$damageForArmor = min($damage, $armorCalcCap);
+
+			$f = min(
+				20.0,
+				max(
+					$armor / 5.0,
+					$armor - ($damageForArmor / (2.0 + $toughness / 4.0))
+				)
+			);
+
+			$reduction = $f / 25.0;
+			$source->setModifier(-$damage * $reduction, EntityDamageEvent::MODIFIER_ARMOR);
 		}
 
 		$cause = $source->getCause();

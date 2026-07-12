@@ -886,6 +886,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 				if($oldWorld !== null){
 					foreach($this->usedChunks as $index => $status){
 						World::getXZ($index, $X, $Z);
+						if($status === UsedChunkStatus::SENT){
+							$this->getNetworkSession()->clearClientChunk($X, $Z);
+						}
 						$this->unloadChunk($X, $Z, $oldWorld);
 					}
 				}
@@ -3166,5 +3169,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$this->logger->debug("Bed was changed or deleted, aborting sleep");
 			$this->stopSleep();
 		}
+	}
+
+	public function isOp(): bool {
+		return Server::getInstance()->isOp($this->getName());
 	}
 }
