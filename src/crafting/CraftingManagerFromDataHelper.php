@@ -218,6 +218,39 @@ final class CraftingManagerFromDataHelper{
 		);
 	}
 
+	/** @param mixed[] $recipe */
+	private static function loadSmithingTransformRecipe(CraftingManager $manager, array $recipe) : void{
+		foreach(["base", "addition", "template", "result"] as $field){
+			if(!isset($recipe[$field]) || !is_array($recipe[$field])){
+				throw new SavedDataLoadingException("Smithing transform recipe field '$field' must be an object");
+			}
+		}
+		$input = self::deserializeNetworkIngredient($recipe["base"]);
+		$addition = self::deserializeNetworkIngredient($recipe["addition"]);
+		$template = self::deserializeNetworkIngredient($recipe["template"]);
+		$output = self::deserializeNetworkItemStack($recipe["result"]);
+		if($input !== null && $addition !== null && $template !== null && $output !== null){
+			$manager->registerSmithingRecipe(new SmithingTransformRecipe($input, $addition, $template, $output));
+		}
+	}
+
+	/** @param mixed[] $recipe */
+	private static function loadSmithingTrimRecipe(CraftingManager $manager, array $recipe) : void{
+		foreach(["base", "addition", "template"] as $field){
+			if(!isset($recipe[$field]) || !is_array($recipe[$field])){
+				throw new SavedDataLoadingException("Smithing trim recipe field '$field' must be an object");
+			}
+		}
+		// Bedrock network-data uses protocol slot order for this special recipe:
+		// base=material, addition=pattern template, template=armour input.
+		$input = self::deserializeNetworkIngredient($recipe["template"]);
+		$addition = self::deserializeNetworkIngredient($recipe["base"]);
+		$template = self::deserializeNetworkIngredient($recipe["addition"]);
+		if($input !== null && $addition !== null && $template !== null){
+			$manager->registerSmithingRecipe(new SmithingTrimRecipe($input, $addition, $template));
+		}
+	}
+
 	/**
 	 * @param mixed[] $recipe
 	 */
@@ -390,9 +423,12 @@ final class CraftingManagerFromDataHelper{
 						self::loadShapedRecipe($result, $recipe);
 						break;
 					case self::NETWORK_RECIPE_TYPE_MULTI:
+						break;
 					case self::NETWORK_RECIPE_TYPE_SMITHING_TRANSFORM:
+						self::loadSmithingTransformRecipe($result, $recipe);
+						break;
 					case self::NETWORK_RECIPE_TYPE_SMITHING_TRIM:
-						//TODO: not supported by the crafting system yet
+						self::loadSmithingTrimRecipe($result, $recipe);
 						break;
 				}
 			}catch(SavedDataLoadingException $e){

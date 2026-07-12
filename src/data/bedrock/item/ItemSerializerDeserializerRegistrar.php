@@ -211,6 +211,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::CLOCK, Items::CLOCK());
 		$this->map1to1Item(Ids::COAL, Items::COAL());
 		$this->map1to1Item(Ids::COAST_ARMOR_TRIM_SMITHING_TEMPLATE, Items::COAST_ARMOR_TRIM_SMITHING_TEMPLATE());
+		$this->map1to1Item(Ids::BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items::BOLT_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$this->map1to1Item(Ids::COCOA_BEANS, Items::COCOA_BEANS());
 		$this->map1to1Item(Ids::COD, Items::RAW_FISH());
 		$this->map1to1Item(Ids::COMPASS, Items::COMPASS());
@@ -261,6 +262,7 @@ final class ItemSerializerDeserializerRegistrar{
 		$this->map1to1Item(Ids::ENDER_PEARL, Items::ENDER_PEARL());
 		$this->map1to1Item(Ids::EXPERIENCE_BOTTLE, Items::EXPERIENCE_BOTTLE());
 		$this->map1to1Item(Ids::EYE_ARMOR_TRIM_SMITHING_TEMPLATE, Items::EYE_ARMOR_TRIM_SMITHING_TEMPLATE());
+		$this->map1to1Item(Ids::FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items::FLOW_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$this->map1to1Item(Ids::FEATHER, Items::FEATHER());
 		$this->map1to1Item(Ids::FERMENTED_SPIDER_EYE, Items::FERMENTED_SPIDER_EYE());
 		$this->map1to1Item(Ids::FIREWORK_ROCKET, Items::FIREWORK_ROCKET());

@@ -23,6 +23,10 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\handler;
 
+use pocketmine\data\bedrock\ArmorTrimMaterialTypeIdMap;
+use pocketmine\data\bedrock\ArmorTrimPatternTypeIdMap;
+use pocketmine\item\ArmorTrimMaterial;
+use pocketmine\item\ArmorTrimPattern;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\cache\CraftingDataCache;
 use pocketmine\network\mcpe\cache\StaticPacketCache;
@@ -33,6 +37,7 @@ use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\ServerboundLoadingScreenPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
+use pocketmine\network\mcpe\protocol\TrimDataPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\types\BoolGameRule;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
@@ -43,12 +48,16 @@ use pocketmine\network\mcpe\protocol\types\NetworkPermissions;
 use pocketmine\network\mcpe\protocol\types\PlayerMovementSettings;
 use pocketmine\network\mcpe\protocol\types\ServerTelemetryData;
 use pocketmine\network\mcpe\protocol\types\SpawnSettings;
+use pocketmine\network\mcpe\protocol\types\TrimMaterial;
+use pocketmine\network\mcpe\protocol\types\TrimPattern;
 use pocketmine\network\mcpe\protocol\VoxelShapesPacket;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
 use pocketmine\VersionInfo;
+use pocketmine\world\format\io\GlobalItemDataHandlers;
 use Ramsey\Uuid\Uuid;
+use function array_map;
 use function sprintf;
 
 /**
@@ -160,6 +169,22 @@ class PreSpawnPacketHandler extends PacketHandler{
 
 			$this->session->getLogger()->debug("Sending crafting data");
 			$this->session->sendDataPacket(CraftingDataCache::getInstance()->getCache($this->server->getCraftingManager()));
+
+			$this->session->getLogger()->debug("Sending armor trim data");
+			$serializer = GlobalItemDataHandlers::getSerializer();
+			$patternMap = ArmorTrimPatternTypeIdMap::getInstance();
+			$materialMap = ArmorTrimMaterialTypeIdMap::getInstance();
+			$this->session->sendDataPacket(TrimDataPacket::create(
+				array_map(static fn(ArmorTrimPattern $pattern) => new TrimPattern(
+					$serializer->serializeType($pattern->getItem())->getName(),
+					$patternMap->toId($pattern)
+				), $patternMap->getAllPatterns()),
+				array_map(static fn(ArmorTrimMaterial $material) => new TrimMaterial(
+					$materialMap->toId($material),
+					$material->getColor(),
+					$serializer->serializeType($material->getItem())->getName()
+				), $materialMap->getAllMaterials())
+			));
 
 			$this->session->getLogger()->debug("Sending player list");
 			$this->session->syncPlayerList($this->server->getOnlinePlayers());

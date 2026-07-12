@@ -38,6 +38,8 @@ use function spl_object_id;
 use const SORT_STRING;
 
 class CraftingManager{
+	/** @var list<SmithingRecipe> */
+	protected array $smithingRecipes = [];
 	use DestructorCallbackTrait;
 
 	/**
@@ -166,6 +168,10 @@ class CraftingManager{
 		return $this->craftingRecipeIndex;
 	}
 
+	/** @return list<SmithingRecipe> */
+	public function getSmithingRecipes() : array{ return $this->smithingRecipes; }
+	public function getSmithingRecipeFromIndex(int $index) : ?SmithingRecipe{ return $this->smithingRecipes[$index] ?? null; }
+
 	public function getCraftingRecipeFromIndex(int $index) : ?CraftingRecipe{
 		return $this->craftingRecipeIndex[$index] ?? null;
 	}
@@ -206,6 +212,11 @@ class CraftingManager{
 		foreach($this->recipeRegisteredCallbacks as $callback){
 			$callback();
 		}
+	}
+
+	public function registerSmithingRecipe(SmithingRecipe $recipe) : void{
+		$this->smithingRecipes[] = $recipe;
+		foreach($this->recipeRegisteredCallbacks as $callback){ $callback(); }
 	}
 
 	public function registerPotionTypeRecipe(PotionTypeRecipe $recipe) : void{

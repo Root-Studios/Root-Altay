@@ -39,7 +39,6 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\StringToTParser;
 use function array_keys;
 use function count;
-use function mb_strtoupper;
 use function strtolower;
 
 /**
@@ -1404,6 +1403,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("clownfish", fn() => Items::CLOWNFISH());
 		$result->register("coal", fn() => Items::COAL());
 		$result->register("coast_armor_trim_smithing_template", fn() => Items::COAST_ARMOR_TRIM_SMITHING_TEMPLATE());
+		$result->register("bolt_armor_trim_smithing_template", fn() => Items::BOLT_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$result->register("cocoa_beans", fn() => Items::COCOA_BEANS());
 		$result->register("cod", fn() => Items::RAW_FISH());
 		$result->register("compass", fn() => Items::COMPASS());
@@ -1456,6 +1456,7 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("ender_pearl", fn() => Items::ENDER_PEARL());
 		$result->register("experience_bottle", fn() => Items::EXPERIENCE_BOTTLE());
 		$result->register("eye_armor_trim_smithing_template", fn() => Items::EYE_ARMOR_TRIM_SMITHING_TEMPLATE());
+		$result->register("flow_armor_trim_smithing_template", fn() => Items::FLOW_ARMOR_TRIM_SMITHING_TEMPLATE());
 		$result->register("eye_drops", fn() => Items::MEDICINE()->setType(MedicineType::EYE_DROPS));
 		$result->register("feather", fn() => Items::FEATHER());
 		$result->register("fermented_spider_eye", fn() => Items::FERMENTED_SPIDER_EYE());

@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\handler;
 
 use pocketmine\block\inventory\EnchantInventory;
+use pocketmine\block\inventory\SmithingTableInventory;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\CreateItemAction;
@@ -32,6 +33,7 @@ use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\inventory\transaction\SmithingTransaction;
 use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\TransactionBuilder;
 use pocketmine\inventory\transaction\TransactionBuilderInventory;
@@ -300,6 +302,7 @@ class ItemStackRequestExecutor{
 	private function assertDoingCrafting() : void{
 		if(
 			!$this->specialTransaction instanceof CraftingTransaction &&
+			!$this->specialTransaction instanceof SmithingTransaction &&
 			!$this->specialTransaction instanceof EnchantingTransaction &&
 			!$this->specialTransaction instanceof TradingTransaction
 		){
@@ -386,6 +389,14 @@ class ItemStackRequestExecutor{
 					$this->specialTransaction = new EnchantingTransaction($this->player, $option, $optionId + 1);
 					$this->setNextCreatedItem($window->getOutput($optionId));
 				}
+			}elseif($window instanceof SmithingTableInventory){
+				$index = $action->getRecipeId() - InventoryManager::SMITHING_RECIPE_NETWORK_OFFSET;
+				$recipe = $this->player->getServer()->getCraftingManager()->getSmithingRecipeFromIndex($index);
+				if($recipe === null || ($output = $recipe->getResultFor($window->getContents())) === null){
+					throw new ItemStackRequestProcessException("Invalid or non-matching smithing recipe ID: " . $action->getRecipeId());
+				}
+				$this->specialTransaction = new SmithingTransaction($this->player, $recipe);
+				$this->setNextCreatedItem($output);
 			}elseif($window instanceof TradeInventory){
 				$this->beginTrading($window, $action->getRecipeId());
 			}else{

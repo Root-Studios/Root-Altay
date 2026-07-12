@@ -24,6 +24,8 @@ declare(strict_types=1);
 namespace pocketmine\item;
 
 use pocketmine\color\Color;
+use pocketmine\data\bedrock\ArmorTrimMaterialTypeIdMap;
+use pocketmine\data\bedrock\ArmorTrimPatternTypeIdMap;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\enchantment\ProtectionEnchantment;
@@ -39,10 +41,14 @@ use function mt_rand;
 class Armor extends Durable{
 
 	public const TAG_CUSTOM_COLOR = "customColor"; //TAG_Int
+	private const TAG_TRIM = "Trim";
+	private const TAG_TRIM_MATERIAL = "Material";
+	private const TAG_TRIM_PATTERN = "Pattern";
 
 	private ArmorTypeInfo $armorInfo;
 
 	protected ?Color $customColor = null;
+	private ?ArmorTrim $trim = null;
 
 	/**
 	 * @param string[] $enchantmentTags
@@ -106,6 +112,14 @@ class Armor extends Durable{
 		return $this;
 	}
 
+	public function getTrim() : ?ArmorTrim{ return $this->trim; }
+
+	/** @return $this */
+	public function setTrim(?ArmorTrim $trim) : self{
+		$this->trim = $trim;
+		return $this;
+	}
+
 	/**
 	 * Returns the total enchantment protection factor this armour piece offers from all applicable protection
 	 * enchantments on the item.
@@ -164,6 +178,12 @@ class Armor extends Durable{
 		}else{
 			$this->customColor = null;
 		}
+		$this->trim = null;
+		if(($trimTag = $tag->getTag(self::TAG_TRIM)) instanceof CompoundTag){
+			$material = ArmorTrimMaterialTypeIdMap::getInstance()->fromId($trimTag->getString(self::TAG_TRIM_MATERIAL));
+			$pattern = ArmorTrimPatternTypeIdMap::getInstance()->fromId($trimTag->getString(self::TAG_TRIM_PATTERN));
+			if($material !== null && $pattern !== null){ $this->trim = new ArmorTrim($material, $pattern); }
+		}
 	}
 
 	protected function serializeCompoundTag(CompoundTag $tag) : void{
@@ -171,5 +191,12 @@ class Armor extends Durable{
 		$this->customColor !== null ?
 			$tag->setInt(self::TAG_CUSTOM_COLOR, Binary::signInt($this->customColor->toARGB())) :
 			$tag->removeTag(self::TAG_CUSTOM_COLOR);
+		if($this->trim !== null){
+			$tag->setTag(self::TAG_TRIM, CompoundTag::create()
+				->setString(self::TAG_TRIM_MATERIAL, ArmorTrimMaterialTypeIdMap::getInstance()->toId($this->trim->getMaterial()))
+				->setString(self::TAG_TRIM_PATTERN, ArmorTrimPatternTypeIdMap::getInstance()->toId($this->trim->getPattern())));
+		}else{
+			$tag->removeTag(self::TAG_TRIM);
+		}
 	}
 }
