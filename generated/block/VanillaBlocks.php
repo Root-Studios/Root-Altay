@@ -569,6 +569,7 @@ final class VanillaBlocks{
 	private static MelonStem $_mMELON_STEM;
 	private static MobHead $_mMOB_HEAD;
 	private static MonsterSpawner $_mMONSTER_SPAWNER;
+	private static Opaque $_mMOSS;
 	private static Opaque $_mMOSSY_COBBLESTONE;
 	private static Slab $_mMOSSY_COBBLESTONE_SLAB;
 	private static Stair $_mMOSSY_COBBLESTONE_STAIRS;
@@ -1446,6 +1447,7 @@ final class VanillaBlocks{
 			"melon_stem" => fn(MelonStem $v) => self::$_mMELON_STEM = $v,
 			"mob_head" => fn(MobHead $v) => self::$_mMOB_HEAD = $v,
 			"monster_spawner" => fn(MonsterSpawner $v) => self::$_mMONSTER_SPAWNER = $v,
+			"moss" => fn(Opaque $v) => self::$_mMOSS = $v,
 			"mossy_cobblestone" => fn(Opaque $v) => self::$_mMOSSY_COBBLESTONE = $v,
 			"mossy_cobblestone_slab" => fn(Slab $v) => self::$_mMOSSY_COBBLESTONE_SLAB = $v,
 			"mossy_cobblestone_stairs" => fn(Stair $v) => self::$_mMOSSY_COBBLESTONE_STAIRS = $v,
@@ -4449,6 +4451,11 @@ final class VanillaBlocks{
 	public static function MONSTER_SPAWNER() : MonsterSpawner{
 		if(!isset(self::$_mMONSTER_SPAWNER)){ self::init(); }
 		return clone self::$_mMONSTER_SPAWNER;
+	}
+
+	public static function MOSS() : Opaque{
+		if(!isset(self::$_mMOSS)){ self::init(); }
+		return clone self::$_mMOSS;
 	}
 
 	public static function MOSSY_COBBLESTONE() : Opaque{

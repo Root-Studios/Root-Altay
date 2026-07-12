@@ -168,11 +168,13 @@ final class ItemSerializerDeserializerRegistrar{
 	 * Registers mappings for item IDs which directly correspond to PocketMine-MP items.
 	 */
 	private function register1to1ItemMappings() : void{
+		$this->map1to1Item(Ids::ARMADILLO_SCUTE, Items::ARMADILLO_SCUTE());
 		$this->map1to1Item(Ids::BRUSH, Items::BRUSH());
 		$this->map1to1Item(Ids::ANGLER_POTTERY_SHERD, Items::ANGLER_POTTERY_SHERD());
 		$this->map1to1Item(Ids::ARCHER_POTTERY_SHERD, Items::ARCHER_POTTERY_SHERD());
 		$this->map1to1Item(Ids::ARMS_UP_POTTERY_SHERD, Items::ARMS_UP_POTTERY_SHERD());
 		$this->map1to1Item(Ids::BLADE_POTTERY_SHERD, Items::BLADE_POTTERY_SHERD());
+		$this->map1to1Item(Ids::BREEZE_ROD, Items::BREEZE_ROD());
 		$this->map1to1Item(Ids::BREWER_POTTERY_SHERD, Items::BREWER_POTTERY_SHERD());
 		$this->map1to1Item(Ids::BURN_POTTERY_SHERD, Items::BURN_POTTERY_SHERD());
 		$this->map1to1Item(Ids::DANGER_POTTERY_SHERD, Items::DANGER_POTTERY_SHERD());

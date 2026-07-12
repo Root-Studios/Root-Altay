@@ -606,6 +606,14 @@ class World implements ChunkManager{
 		}
 	}
 
+	public function setTickedBlocksPerSubchunkPerTick(int $value) : void{
+		$this->tickedBlocksPerSubchunkPerTick = max(0, min($value, 64));
+	}
+
+	public function getTickedBlocksPerSubchunkPerTick() : int{
+		return $this->tickedBlocksPerSubchunkPerTick;
+	}
+
 	public function getTickRateTime() : float{
 		return $this->tickRateTime;
 	}

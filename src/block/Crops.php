@@ -68,7 +68,7 @@ abstract class Crops extends Flowable implements Ageable{
 	}
 
 	public function onRandomTick() : void{
-		if($this->age < self::MAX_AGE && CropGrowthHelper::canGrow($this)){
+		if($this->age < self::MAX_AGE && CropGrowthHelper::canGrow()){
 			$block = clone $this;
 			++$block->age;
 			BlockEventHelper::grow($this, $block, null);

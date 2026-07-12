@@ -38,7 +38,7 @@ use pocketmine\player\Player;
  */
 final class BlockEventHelper{
 
-	public static function grow(Block $oldState, Block $newState, ?Player $causingPlayer) : bool{
+	public static function grow(Block $oldState, Block $newState, ?Player $causingPlayer, bool $update = false) : bool{
 		if(BlockGrowEvent::hasHandlers()){
 			$ev = new BlockGrowEvent($oldState, $newState, $causingPlayer);
 			$ev->call();
@@ -49,7 +49,7 @@ final class BlockEventHelper{
 		}
 
 		$position = $oldState->getPosition();
-		$position->getWorld()->setBlock($position, $newState);
+		$position->getWorld()->setBlock($position, $newState, $update);
 		return true;
 	}
 

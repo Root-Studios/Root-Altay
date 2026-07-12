@@ -46,6 +46,7 @@ final class VanillaItems{
 	private static Item $_mANGLER_POTTERY_SHERD;
 	private static Apple $_mAPPLE;
 	private static Item $_mARCHER_POTTERY_SHERD;
+	private static Item $_mARMADILLO_SCUTE;
 	private static ArmorStand $_mARMOR_STAND;
 	private static Item $_mARMS_UP_POTTERY_SHERD;
 	private static Arrow $_mARROW;
@@ -72,6 +73,7 @@ final class VanillaItems{
 	private static Bow $_mBOW;
 	private static Bowl $_mBOWL;
 	private static Bread $_mBREAD;
+	private static Item $_mBREEZE_ROD;
 	private static Item $_mBREWER_POTTERY_SHERD;
 	private static Item $_mBRICK;
 	private static Brush $_mBRUSH;
@@ -444,6 +446,7 @@ final class VanillaItems{
 			"angler_pottery_sherd" => fn(Item $v) => self::$_mANGLER_POTTERY_SHERD = $v,
 			"apple" => fn(Apple $v) => self::$_mAPPLE = $v,
 			"archer_pottery_sherd" => fn(Item $v) => self::$_mARCHER_POTTERY_SHERD = $v,
+			"armadillo_scute" => fn(Item $v) => self::$_mARMADILLO_SCUTE = $v,
 			"armor_stand" => fn(ArmorStand $v) => self::$_mARMOR_STAND = $v,
 			"arms_up_pottery_sherd" => fn(Item $v) => self::$_mARMS_UP_POTTERY_SHERD = $v,
 			"arrow" => fn(Arrow $v) => self::$_mARROW = $v,
@@ -470,6 +473,7 @@ final class VanillaItems{
 			"bow" => fn(Bow $v) => self::$_mBOW = $v,
 			"bowl" => fn(Bowl $v) => self::$_mBOWL = $v,
 			"bread" => fn(Bread $v) => self::$_mBREAD = $v,
+			"breeze_rod" => fn(Item $v) => self::$_mBREEZE_ROD = $v,
 			"brewer_pottery_sherd" => fn(Item $v) => self::$_mBREWER_POTTERY_SHERD = $v,
 			"brick" => fn(Item $v) => self::$_mBRICK = $v,
 			"brush" => fn(Brush $v) => self::$_mBRUSH = $v,
@@ -878,6 +882,11 @@ final class VanillaItems{
 		return clone self::$_mARCHER_POTTERY_SHERD;
 	}
 
+	public static function ARMADILLO_SCUTE() : Item{
+		if(!isset(self::$_mARMADILLO_SCUTE)){ self::init(); }
+		return clone self::$_mARMADILLO_SCUTE;
+	}
+
 	public static function ARMOR_STAND() : ArmorStand{
 		if(!isset(self::$_mARMOR_STAND)){ self::init(); }
 		return clone self::$_mARMOR_STAND;
@@ -1006,6 +1015,11 @@ final class VanillaItems{
 	public static function BREAD() : Bread{
 		if(!isset(self::$_mBREAD)){ self::init(); }
 		return clone self::$_mBREAD;
+	}
+
+	public static function BREEZE_ROD() : Item{
+		if(!isset(self::$_mBREEZE_ROD)){ self::init(); }
+		return clone self::$_mBREEZE_ROD;
 	}
 
 	public static function BREWER_POTTERY_SHERD() : Item{

@@ -100,6 +100,7 @@ final class VanillaItemsInputs extends RegistrySource{
 		self::registerDelayed("acacia_sign", fn(string $name) : ItemBlockWallOrFloor => new ItemBlockWallOrFloor(self::makeIID($name), Blocks::ACACIA_SIGN(), Blocks::ACACIA_WALL_SIGN()));
 		self::registerDelayed("acacia_hanging_sign", fn(string $name) : HangingSign => new HangingSign(self::makeIID($name), "Acacia Hanging Sign", Blocks::ACACIA_CEILING_CENTER_HANGING_SIGN(), Blocks::ACACIA_CEILING_EDGES_HANGING_SIGN(), Blocks::ACACIA_WALL_HANGING_SIGN()));
 		self::register("amethyst_shard", fn(IID $id) => new Item($id, "Amethyst Shard"));
+		self::register("armadillo_scute", fn(IID $id) => new Item($id, "Armadillo Scute"));
 		self::register("apple", fn(IID $id) => new Apple($id, "Apple"));
 		self::register("armor_stand", fn(IID $id) => new ArmorStand($id, "Armor Stand"));
 		self::register("arrow", fn(IID $id) => new Arrow($id, "Arrow"));
@@ -122,6 +123,7 @@ final class VanillaItemsInputs extends RegistrySource{
 		self::register("bow", fn(IID $id) => new Bow($id, "Bow", [EnchantmentTags::BOW]));
 		self::register("bowl", fn(IID $id) => new Bowl($id, "Bowl"));
 		self::register("bread", fn(IID $id) => new Bread($id, "Bread"));
+		self::register("breeze_rod", fn(IID $id) => new Item($id, "Breeze Rod"));
 		self::register("brick", fn(IID $id) => new Item($id, "Brick"));
 		self::register("brush", fn(IID $id) => new Brush($id, "Brush", [EnchantmentTags::BRUSH]));
 		foreach([

@@ -398,6 +398,7 @@ final class VanillaBlockMappings{
 		$reg->mapSimple(Blocks::MANGROVE_ROOTS(), Ids::MANGROVE_ROOTS);
 		$reg->mapSimple(Blocks::MELON(), Ids::MELON_BLOCK);
 		$reg->mapSimple(Blocks::MONSTER_SPAWNER(), Ids::MOB_SPAWNER);
+		$reg->mapSimple(Blocks::MOSS(), Ids::MOSS_BLOCK);
 		$reg->mapSimple(Blocks::MOSSY_COBBLESTONE(), Ids::MOSSY_COBBLESTONE);
 		$reg->mapSimple(Blocks::MOSSY_STONE_BRICKS(), Ids::MOSSY_STONE_BRICKS);
 		$reg->mapSimple(Blocks::MUD(), Ids::MUD);
@@ -1426,8 +1427,7 @@ final class VanillaBlockMappings{
 			$commonProperties->pillarAxis
 		]));
 		$reg->mapModel(Model::create(Blocks::HOPPER(), Ids::HOPPER)->properties([
-			//kinda weird this doesn't use powered_bit?
-			new BoolProperty(StateNames::TOGGLE_BIT, fn(PoweredByRedstone $b) => $b->isPowered(), fn(PoweredByRedstone $b, bool $v) => $b->setPowered($v)),
+			new BoolProperty(StateNames::TOGGLE_BIT, fn(Hopper $b) => $b->isPowered(), fn(Hopper $b, bool $v) => $b->setPowered($v)),
 			new ValueFromIntProperty(StateNames::FACING_DIRECTION, ValueMappings::getInstance()->facingExceptUp, fn(Hopper $b) => $b->getFacing(), fn(Hopper $b, int $v) => $b->setFacing($v)),
 		]));
 
