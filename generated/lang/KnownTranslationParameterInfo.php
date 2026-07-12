@@ -198,6 +198,7 @@ final class KnownTranslationParameterInfo{
 		Keys::ENCHANTMENT_LOOTBONUS => [],
 		Keys::ENCHANTMENT_LOOTBONUSDIGGER => [],
 		Keys::ENCHANTMENT_LOOTBONUSFISHING => [],
+		Keys::ENCHANTMENT_LUNGE => [],
 		Keys::ENCHANTMENT_MENDING => [],
 		Keys::ENCHANTMENT_OXYGEN => [],
 		Keys::ENCHANTMENT_PROTECT_ALL => [],

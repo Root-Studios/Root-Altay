@@ -454,7 +454,8 @@ abstract class Living extends Entity{
 		}
 		if($source->canBeReducedByArmor()){
 			//MCPE uses the same system as PC did pre-1.9
-			$source->setModifier(-$source->getFinalDamage() * $this->getArmorPoints() * 0.04, EntityDamageEvent::MODIFIER_ARMOR);
+			$effectiveArmorPoints = $this->getArmorPoints() * (1.0 - $source->getArmorEffectivenessReduction());
+			$source->setModifier(-$source->getFinalDamage() * $effectiveArmorPoints * 0.04, EntityDamageEvent::MODIFIER_ARMOR);
 		}
 
 		$cause = $source->getCause();

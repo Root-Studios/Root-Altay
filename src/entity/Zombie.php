@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\utils\LootingDropHelper;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
@@ -42,10 +43,10 @@ class Zombie extends Living{
 
 	public function getDrops() : array{
 		$drops = [
-			VanillaItems::ROTTEN_FLESH()->setCount(mt_rand(0, 2))
+			VanillaItems::ROTTEN_FLESH()->setCount(LootingDropHelper::discrete($this, 0, 2))
 		];
 
-		if(mt_rand(0, 199) < 5){
+		if(LootingDropHelper::bonusChanceFixed($this, 0.025, 0.01)){
 			switch(mt_rand(0, 2)){
 				case 0:
 					$drops[] = VanillaItems::IRON_INGOT();

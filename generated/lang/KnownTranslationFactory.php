@@ -900,6 +900,10 @@ final class KnownTranslationFactory{
 		return new Translatable(KnownTranslationKeys::ENCHANTMENT_LOOTBONUSFISHING, []);
 	}
 
+	public static function enchantment_lunge() : Translatable{
+		return new Translatable(KnownTranslationKeys::ENCHANTMENT_LUNGE, []);
+	}
+
 	public static function enchantment_mending() : Translatable{
 		return new Translatable(KnownTranslationKeys::ENCHANTMENT_MENDING, []);
 	}

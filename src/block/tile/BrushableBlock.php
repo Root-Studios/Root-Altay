@@ -27,7 +27,7 @@ final class BrushableBlock extends Spawnable{
 	private int $lastBrushTick = 0;
 
 	public function __construct(World $world, Vector3 $pos){
-		$this->item = VanillaItems::AIR();
+		$this->item = VanillaItems::DIAMOND();
 		parent::__construct($world, $pos);
 	}
 

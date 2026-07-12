@@ -76,7 +76,7 @@ abstract class SuspiciousBlock extends Opaque implements Fallable{
 	public function onPostPlace() : void{
 		$tile = $this->position->getWorld()->getTile($this->position);
 		if($tile instanceof BrushableBlock){
-			$tile->setItem($this->itemInside);
+			$tile->setItem($this->itemInside ?? VanillaItems::DIAMOND());
 			$tile->setBrushCount($this->brushedProgress);
 		}
 	}

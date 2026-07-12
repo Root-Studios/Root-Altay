@@ -104,9 +104,11 @@ use pocketmine\item\Durable;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\MeleeWeaponEnchantment;
 use pocketmine\item\Item;
-use pocketmine\item\ItemUseResult;
 use pocketmine\item\ItemUseOnBlockHandler;
+use pocketmine\item\ItemUseResult;
+use pocketmine\item\Mace;
 use pocketmine\item\Releasable;
+use pocketmine\item\Spear;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Language;
 use pocketmine\lang\Translatable;
@@ -761,8 +763,16 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	private function setUsingItemOnBlock(Vector3 $pos, int $face, Vector3 $clickOffset) : void{
-		$this->startAction = $this->server->getTick();
-		$this->itemUseBlockPosition = $pos->floor();
+		$blockPosition = $pos->floor();
+		if(
+			!$this->isUsingItem() ||
+			$this->itemUseBlockPosition === null ||
+			!$this->itemUseBlockPosition->equals($blockPosition) ||
+			$this->itemUseBlockFace !== $face
+		){
+			$this->startAction = $this->server->getTick();
+		}
+		$this->itemUseBlockPosition = $blockPosition;
 		$this->itemUseBlockFace = $face;
 		$this->itemUseBlockClickOffset = clone $clickOffset;
 		$this->networkPropertiesDirty = true;
@@ -2076,7 +2086,16 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 * @return bool if it did something
 	 */
 	public function interactBlock(Vector3 $pos, int $face, Vector3 $clickOffset) : bool{
-		$this->setUsingItem(false);
+		$heldItem = $this->inventory->getItemInHand();
+		if(
+			!$this->isUsingItem() ||
+			!$heldItem instanceof ItemUseOnBlockHandler ||
+			$this->itemUseBlockPosition === null ||
+			!$this->itemUseBlockPosition->equals($pos->floor()) ||
+			$this->itemUseBlockFace !== $face
+		){
+			$this->setUsingItem(false);
+		}
 
 		if($this->canInteract($pos->add(0.5, 0.5, 0.5), $this->isCreative() ? self::MAX_REACH_DISTANCE_CREATIVE : self::MAX_REACH_DISTANCE_SURVIVAL)){
 			$this->broadcastAnimation(new ArmSwingAnimation($this), $this->getViewers());
@@ -2098,6 +2117,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	private function tickItemUseOnBlock(ItemUseOnBlockHandler $item) : void{
+		assert($item instanceof Item);
 		$pos = $this->itemUseBlockPosition;
 		$clickOffset = $this->itemUseBlockClickOffset;
 		if($pos === null || $clickOffset === null || !$this->canInteract($pos->add(0.5, 0.5, 0.5), $this->isCreative() ? self::MAX_REACH_DISTANCE_CREATIVE : self::MAX_REACH_DISTANCE_SURVIVAL)){
@@ -2136,8 +2156,25 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 		$heldItem = $this->inventory->getItemInHand();
 		$oldItem = clone $heldItem;
+		$fallDistance = $this->fallDistance;
+		$isSpearJab = $heldItem instanceof Spear && !$this->isUsingItem();
 
 		$ev = new EntityDamageByEntityEvent($this, $entity, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $heldItem->getAttackPoints());
+		if($heldItem instanceof Mace){
+			$ev->setModifier($heldItem->getSmashDamageBonus($fallDistance), EntityDamageEvent::MODIFIER_WEAPON_SPECIAL);
+			$ev->setArmorEffectivenessReduction($heldItem->getArmorEffectivenessReduction());
+		}elseif($heldItem instanceof Spear){
+			if(!$heldItem->isTargetInJabRange($this, $entity)){
+				$ev->cancel();
+			}elseif($this->isUsingItem()){
+				$chargeDamage = $heldItem->getChargeAttackDamage($this, $entity);
+				if($chargeDamage === null){
+					$ev->cancel();
+				}else{
+					$ev->setModifier($chargeDamage - $heldItem->getAttackPoints(), EntityDamageEvent::MODIFIER_WEAPON_SPECIAL);
+				}
+			}
+		}
 		if(!$this->canInteract($entity->getLocation(), self::MAX_REACH_DISTANCE_ENTITY_INTERACTION)){
 			$this->logger->debug("Cancelled attack of entity " . $entity->getId() . " due to not currently being interactable");
 			$ev->cancel();
@@ -2184,6 +2221,12 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$type->onPostAttack($this, $entity, $enchantment->getLevel());
 		}
 
+		if($heldItem instanceof Mace){
+			$heldItem->onSuccessfulSmash($this, $entity, $fallDistance);
+		}elseif($isSpearJab){
+			$heldItem->tryLunge($this);
+		}
+
 		if($this->isAlive()){
 			//reactive damage like thorns might cause us to be killed by attacking another mob, which
 			//would mean we'd already have dropped the inventory by the time we reached here
@@ -2205,6 +2248,11 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$ev = new PlayerMissSwingEvent($this);
 		$ev->call();
 		if(!$ev->isCancelled()){
+			$item = $this->inventory->getItemInHand();
+			$oldItem = clone $item;
+			if($item instanceof Spear && $item->tryLunge($this, true)){
+				$this->returnItemsFromAction($oldItem, $item, []);
+			}
 			$this->broadcastSound(new EntityAttackNoDamageSound());
 			$this->broadcastAnimation(new ArmSwingAnimation($this), $this->getViewers());
 		}

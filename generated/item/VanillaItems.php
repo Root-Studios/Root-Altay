@@ -149,6 +149,7 @@ final class VanillaItems{
 	private static Item $_mCOPPER_NUGGET;
 	private static Pickaxe $_mCOPPER_PICKAXE;
 	private static Shovel $_mCOPPER_SHOVEL;
+	private static Spear $_mCOPPER_SPEAR;
 	private static Sword $_mCOPPER_SWORD;
 	private static CoralFan $_mCORAL_FAN;
 	private static HangingSign $_mCRIMSON_HANGING_SIGN;
@@ -166,6 +167,7 @@ final class VanillaItems{
 	private static Armor $_mDIAMOND_LEGGINGS;
 	private static Pickaxe $_mDIAMOND_PICKAXE;
 	private static Shovel $_mDIAMOND_SHOVEL;
+	private static Spear $_mDIAMOND_SPEAR;
 	private static Sword $_mDIAMOND_SWORD;
 	private static Item $_mDISC_FRAGMENT_5;
 	private static Item $_mDRAGON_BREATH;
@@ -210,6 +212,7 @@ final class VanillaItems{
 	private static Armor $_mGOLDEN_LEGGINGS;
 	private static Pickaxe $_mGOLDEN_PICKAXE;
 	private static Shovel $_mGOLDEN_SHOVEL;
+	private static Spear $_mGOLDEN_SPEAR;
 	private static Sword $_mGOLDEN_SWORD;
 	private static Item $_mGOLD_INGOT;
 	private static Item $_mGOLD_NUGGET;
@@ -234,6 +237,7 @@ final class VanillaItems{
 	private static Item $_mIRON_NUGGET;
 	private static Pickaxe $_mIRON_PICKAXE;
 	private static Shovel $_mIRON_SHOVEL;
+	private static Spear $_mIRON_SPEAR;
 	private static Sword $_mIRON_SWORD;
 	private static Boat $_mJUNGLE_BOAT;
 	private static HangingSign $_mJUNGLE_HANGING_SIGN;
@@ -246,6 +250,7 @@ final class VanillaItems{
 	private static Armor $_mLEATHER_PANTS;
 	private static Armor $_mLEATHER_TUNIC;
 	private static SplashPotion $_mLINGERING_POTION;
+	private static Mace $_mMACE;
 	private static Item $_mMAGMA_CREAM;
 	private static Boat $_mMANGROVE_BOAT;
 	private static HangingSign $_mMANGROVE_HANGING_SIGN;
@@ -270,6 +275,7 @@ final class VanillaItems{
 	private static Pickaxe $_mNETHERITE_PICKAXE;
 	private static Item $_mNETHERITE_SCRAP;
 	private static Shovel $_mNETHERITE_SHOVEL;
+	private static Spear $_mNETHERITE_SPEAR;
 	private static Sword $_mNETHERITE_SWORD;
 	private static Item $_mNETHERITE_UPGRADE_SMITHING_TEMPLATE;
 	private static Item $_mNETHER_BRICK;
@@ -365,6 +371,7 @@ final class VanillaItems{
 	private static Hoe $_mSTONE_HOE;
 	private static Pickaxe $_mSTONE_PICKAXE;
 	private static Shovel $_mSTONE_SHOVEL;
+	private static Spear $_mSTONE_SPEAR;
 	private static Sword $_mSTONE_SWORD;
 	private static StringItem $_mSTRING;
 	private static Item $_mSUGAR;
@@ -385,10 +392,12 @@ final class VanillaItems{
 	private static Item $_mWHEAT;
 	private static WheatSeeds $_mWHEAT_SEEDS;
 	private static Item $_mWILD_ARMOR_TRIM_SMITHING_TEMPLATE;
+	private static WindCharge $_mWIND_CHARGE;
 	private static Axe $_mWOODEN_AXE;
 	private static Hoe $_mWOODEN_HOE;
 	private static Pickaxe $_mWOODEN_PICKAXE;
 	private static Shovel $_mWOODEN_SHOVEL;
+	private static Spear $_mWOODEN_SPEAR;
 	private static Sword $_mWOODEN_SWORD;
 	private static WritableBook $_mWRITABLE_BOOK;
 	private static WrittenBook $_mWRITTEN_BOOK;
@@ -538,6 +547,7 @@ final class VanillaItems{
 			"copper_nugget" => fn(Item $v) => self::$_mCOPPER_NUGGET = $v,
 			"copper_pickaxe" => fn(Pickaxe $v) => self::$_mCOPPER_PICKAXE = $v,
 			"copper_shovel" => fn(Shovel $v) => self::$_mCOPPER_SHOVEL = $v,
+			"copper_spear" => fn(Spear $v) => self::$_mCOPPER_SPEAR = $v,
 			"copper_sword" => fn(Sword $v) => self::$_mCOPPER_SWORD = $v,
 			"coral_fan" => fn(CoralFan $v) => self::$_mCORAL_FAN = $v,
 			"crimson_hanging_sign" => fn(HangingSign $v) => self::$_mCRIMSON_HANGING_SIGN = $v,
@@ -555,6 +565,7 @@ final class VanillaItems{
 			"diamond_leggings" => fn(Armor $v) => self::$_mDIAMOND_LEGGINGS = $v,
 			"diamond_pickaxe" => fn(Pickaxe $v) => self::$_mDIAMOND_PICKAXE = $v,
 			"diamond_shovel" => fn(Shovel $v) => self::$_mDIAMOND_SHOVEL = $v,
+			"diamond_spear" => fn(Spear $v) => self::$_mDIAMOND_SPEAR = $v,
 			"diamond_sword" => fn(Sword $v) => self::$_mDIAMOND_SWORD = $v,
 			"disc_fragment_5" => fn(Item $v) => self::$_mDISC_FRAGMENT_5 = $v,
 			"dragon_breath" => fn(Item $v) => self::$_mDRAGON_BREATH = $v,
@@ -599,6 +610,7 @@ final class VanillaItems{
 			"golden_leggings" => fn(Armor $v) => self::$_mGOLDEN_LEGGINGS = $v,
 			"golden_pickaxe" => fn(Pickaxe $v) => self::$_mGOLDEN_PICKAXE = $v,
 			"golden_shovel" => fn(Shovel $v) => self::$_mGOLDEN_SHOVEL = $v,
+			"golden_spear" => fn(Spear $v) => self::$_mGOLDEN_SPEAR = $v,
 			"golden_sword" => fn(Sword $v) => self::$_mGOLDEN_SWORD = $v,
 			"gold_ingot" => fn(Item $v) => self::$_mGOLD_INGOT = $v,
 			"gold_nugget" => fn(Item $v) => self::$_mGOLD_NUGGET = $v,
@@ -623,6 +635,7 @@ final class VanillaItems{
 			"iron_nugget" => fn(Item $v) => self::$_mIRON_NUGGET = $v,
 			"iron_pickaxe" => fn(Pickaxe $v) => self::$_mIRON_PICKAXE = $v,
 			"iron_shovel" => fn(Shovel $v) => self::$_mIRON_SHOVEL = $v,
+			"iron_spear" => fn(Spear $v) => self::$_mIRON_SPEAR = $v,
 			"iron_sword" => fn(Sword $v) => self::$_mIRON_SWORD = $v,
 			"jungle_boat" => fn(Boat $v) => self::$_mJUNGLE_BOAT = $v,
 			"jungle_hanging_sign" => fn(HangingSign $v) => self::$_mJUNGLE_HANGING_SIGN = $v,
@@ -635,6 +648,7 @@ final class VanillaItems{
 			"leather_pants" => fn(Armor $v) => self::$_mLEATHER_PANTS = $v,
 			"leather_tunic" => fn(Armor $v) => self::$_mLEATHER_TUNIC = $v,
 			"lingering_potion" => fn(SplashPotion $v) => self::$_mLINGERING_POTION = $v,
+			"mace" => fn(Mace $v) => self::$_mMACE = $v,
 			"magma_cream" => fn(Item $v) => self::$_mMAGMA_CREAM = $v,
 			"mangrove_boat" => fn(Boat $v) => self::$_mMANGROVE_BOAT = $v,
 			"mangrove_hanging_sign" => fn(HangingSign $v) => self::$_mMANGROVE_HANGING_SIGN = $v,
@@ -659,6 +673,7 @@ final class VanillaItems{
 			"netherite_pickaxe" => fn(Pickaxe $v) => self::$_mNETHERITE_PICKAXE = $v,
 			"netherite_scrap" => fn(Item $v) => self::$_mNETHERITE_SCRAP = $v,
 			"netherite_shovel" => fn(Shovel $v) => self::$_mNETHERITE_SHOVEL = $v,
+			"netherite_spear" => fn(Spear $v) => self::$_mNETHERITE_SPEAR = $v,
 			"netherite_sword" => fn(Sword $v) => self::$_mNETHERITE_SWORD = $v,
 			"netherite_upgrade_smithing_template" => fn(Item $v) => self::$_mNETHERITE_UPGRADE_SMITHING_TEMPLATE = $v,
 			"nether_brick" => fn(Item $v) => self::$_mNETHER_BRICK = $v,
@@ -754,6 +769,7 @@ final class VanillaItems{
 			"stone_hoe" => fn(Hoe $v) => self::$_mSTONE_HOE = $v,
 			"stone_pickaxe" => fn(Pickaxe $v) => self::$_mSTONE_PICKAXE = $v,
 			"stone_shovel" => fn(Shovel $v) => self::$_mSTONE_SHOVEL = $v,
+			"stone_spear" => fn(Spear $v) => self::$_mSTONE_SPEAR = $v,
 			"stone_sword" => fn(Sword $v) => self::$_mSTONE_SWORD = $v,
 			"string" => fn(StringItem $v) => self::$_mSTRING = $v,
 			"sugar" => fn(Item $v) => self::$_mSUGAR = $v,
@@ -774,10 +790,12 @@ final class VanillaItems{
 			"wheat" => fn(Item $v) => self::$_mWHEAT = $v,
 			"wheat_seeds" => fn(WheatSeeds $v) => self::$_mWHEAT_SEEDS = $v,
 			"wild_armor_trim_smithing_template" => fn(Item $v) => self::$_mWILD_ARMOR_TRIM_SMITHING_TEMPLATE = $v,
+			"wind_charge" => fn(WindCharge $v) => self::$_mWIND_CHARGE = $v,
 			"wooden_axe" => fn(Axe $v) => self::$_mWOODEN_AXE = $v,
 			"wooden_hoe" => fn(Hoe $v) => self::$_mWOODEN_HOE = $v,
 			"wooden_pickaxe" => fn(Pickaxe $v) => self::$_mWOODEN_PICKAXE = $v,
 			"wooden_shovel" => fn(Shovel $v) => self::$_mWOODEN_SHOVEL = $v,
+			"wooden_spear" => fn(Spear $v) => self::$_mWOODEN_SPEAR = $v,
 			"wooden_sword" => fn(Sword $v) => self::$_mWOODEN_SWORD = $v,
 			"writable_book" => fn(WritableBook $v) => self::$_mWRITABLE_BOOK = $v,
 			"written_book" => fn(WrittenBook $v) => self::$_mWRITTEN_BOOK = $v,
@@ -1375,6 +1393,11 @@ final class VanillaItems{
 		return clone self::$_mCOPPER_SHOVEL;
 	}
 
+	public static function COPPER_SPEAR() : Spear{
+		if(!isset(self::$_mCOPPER_SPEAR)){ self::init(); }
+		return clone self::$_mCOPPER_SPEAR;
+	}
+
 	public static function COPPER_SWORD() : Sword{
 		if(!isset(self::$_mCOPPER_SWORD)){ self::init(); }
 		return clone self::$_mCOPPER_SWORD;
@@ -1458,6 +1481,11 @@ final class VanillaItems{
 	public static function DIAMOND_SHOVEL() : Shovel{
 		if(!isset(self::$_mDIAMOND_SHOVEL)){ self::init(); }
 		return clone self::$_mDIAMOND_SHOVEL;
+	}
+
+	public static function DIAMOND_SPEAR() : Spear{
+		if(!isset(self::$_mDIAMOND_SPEAR)){ self::init(); }
+		return clone self::$_mDIAMOND_SPEAR;
 	}
 
 	public static function DIAMOND_SWORD() : Sword{
@@ -1680,6 +1708,11 @@ final class VanillaItems{
 		return clone self::$_mGOLDEN_SHOVEL;
 	}
 
+	public static function GOLDEN_SPEAR() : Spear{
+		if(!isset(self::$_mGOLDEN_SPEAR)){ self::init(); }
+		return clone self::$_mGOLDEN_SPEAR;
+	}
+
 	public static function GOLDEN_SWORD() : Sword{
 		if(!isset(self::$_mGOLDEN_SWORD)){ self::init(); }
 		return clone self::$_mGOLDEN_SWORD;
@@ -1800,6 +1833,11 @@ final class VanillaItems{
 		return clone self::$_mIRON_SHOVEL;
 	}
 
+	public static function IRON_SPEAR() : Spear{
+		if(!isset(self::$_mIRON_SPEAR)){ self::init(); }
+		return clone self::$_mIRON_SPEAR;
+	}
+
 	public static function IRON_SWORD() : Sword{
 		if(!isset(self::$_mIRON_SWORD)){ self::init(); }
 		return clone self::$_mIRON_SWORD;
@@ -1858,6 +1896,11 @@ final class VanillaItems{
 	public static function LINGERING_POTION() : SplashPotion{
 		if(!isset(self::$_mLINGERING_POTION)){ self::init(); }
 		return clone self::$_mLINGERING_POTION;
+	}
+
+	public static function MACE() : Mace{
+		if(!isset(self::$_mMACE)){ self::init(); }
+		return clone self::$_mMACE;
 	}
 
 	public static function MAGMA_CREAM() : Item{
@@ -1978,6 +2021,11 @@ final class VanillaItems{
 	public static function NETHERITE_SHOVEL() : Shovel{
 		if(!isset(self::$_mNETHERITE_SHOVEL)){ self::init(); }
 		return clone self::$_mNETHERITE_SHOVEL;
+	}
+
+	public static function NETHERITE_SPEAR() : Spear{
+		if(!isset(self::$_mNETHERITE_SPEAR)){ self::init(); }
+		return clone self::$_mNETHERITE_SPEAR;
 	}
 
 	public static function NETHERITE_SWORD() : Sword{
@@ -2455,6 +2503,11 @@ final class VanillaItems{
 		return clone self::$_mSTONE_SHOVEL;
 	}
 
+	public static function STONE_SPEAR() : Spear{
+		if(!isset(self::$_mSTONE_SPEAR)){ self::init(); }
+		return clone self::$_mSTONE_SPEAR;
+	}
+
 	public static function STONE_SWORD() : Sword{
 		if(!isset(self::$_mSTONE_SWORD)){ self::init(); }
 		return clone self::$_mSTONE_SWORD;
@@ -2555,6 +2608,11 @@ final class VanillaItems{
 		return clone self::$_mWILD_ARMOR_TRIM_SMITHING_TEMPLATE;
 	}
 
+	public static function WIND_CHARGE() : WindCharge{
+		if(!isset(self::$_mWIND_CHARGE)){ self::init(); }
+		return clone self::$_mWIND_CHARGE;
+	}
+
 	public static function WOODEN_AXE() : Axe{
 		if(!isset(self::$_mWOODEN_AXE)){ self::init(); }
 		return clone self::$_mWOODEN_AXE;
@@ -2573,6 +2631,11 @@ final class VanillaItems{
 	public static function WOODEN_SHOVEL() : Shovel{
 		if(!isset(self::$_mWOODEN_SHOVEL)){ self::init(); }
 		return clone self::$_mWOODEN_SHOVEL;
+	}
+
+	public static function WOODEN_SPEAR() : Spear{
+		if(!isset(self::$_mWOODEN_SPEAR)){ self::init(); }
+		return clone self::$_mWOODEN_SPEAR;
 	}
 
 	public static function WOODEN_SWORD() : Sword{

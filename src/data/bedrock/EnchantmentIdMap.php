@@ -50,6 +50,7 @@ final class EnchantmentIdMap{
 
 		$this->register(EnchantmentIds::KNOCKBACK, VanillaEnchantments::KNOCKBACK());
 		$this->register(EnchantmentIds::FIRE_ASPECT, VanillaEnchantments::FIRE_ASPECT());
+		$this->register(EnchantmentIds::LOOTING, VanillaEnchantments::LOOTING());
 
 		$this->register(EnchantmentIds::EFFICIENCY, VanillaEnchantments::EFFICIENCY());
 		$this->register(EnchantmentIds::FORTUNE, VanillaEnchantments::FORTUNE());
@@ -70,5 +71,10 @@ final class EnchantmentIdMap{
 		$this->register(EnchantmentIds::SWIFT_SNEAK, VanillaEnchantments::SWIFT_SNEAK());
 
 		$this->register(EnchantmentIds::FROST_WALKER, VanillaEnchantments::FROST_WALKER());
+
+		$this->register(EnchantmentIds::WIND_BURST, VanillaEnchantments::WIND_BURST());
+		$this->register(EnchantmentIds::DENSITY, VanillaEnchantments::DENSITY());
+		$this->register(EnchantmentIds::BREACH, VanillaEnchantments::BREACH());
+		$this->register(EnchantmentIds::LUNGE, VanillaEnchantments::LUNGE());
 	}
 }

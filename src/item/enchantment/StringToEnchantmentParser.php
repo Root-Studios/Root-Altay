@@ -38,6 +38,8 @@ final class StringToEnchantmentParser extends StringToTParser{
 		$result = new self();
 
 		$result->register("blast_protection", fn() => VanillaEnchantments::BLAST_PROTECTION());
+		$result->register("breach", fn() => VanillaEnchantments::BREACH());
+		$result->register("density", fn() => VanillaEnchantments::DENSITY());
 		$result->register("efficiency", fn() => VanillaEnchantments::EFFICIENCY());
 		$result->register("feather_falling", fn() => VanillaEnchantments::FEATHER_FALLING());
 		$result->register("fire_aspect", fn() => VanillaEnchantments::FIRE_ASPECT());
@@ -48,6 +50,8 @@ final class StringToEnchantmentParser extends StringToTParser{
 		$result->register("infinity", fn() => VanillaEnchantments::INFINITY());
 		$result->register("knockback", fn() => VanillaEnchantments::KNOCKBACK());
 		$result->register("luck_of_the_sea", fn() => VanillaEnchantments::LUCK_OF_THE_SEA());
+		$result->register("looting", fn() => VanillaEnchantments::LOOTING());
+		$result->register("lunge", fn() => VanillaEnchantments::LUNGE());
 		$result->register("lure", fn() => VanillaEnchantments::LURE());
 		$result->register("mending", fn() => VanillaEnchantments::MENDING());
 		$result->register("power", fn() => VanillaEnchantments::POWER());
@@ -62,6 +66,7 @@ final class StringToEnchantmentParser extends StringToTParser{
 		$result->register("thorns", fn() => VanillaEnchantments::THORNS());
 		$result->register("unbreaking", fn() => VanillaEnchantments::UNBREAKING());
 		$result->register("vanishing", fn() => VanillaEnchantments::VANISHING());
+		$result->register("wind_burst", fn() => VanillaEnchantments::WIND_BURST());
 
 		return $result;
 	}

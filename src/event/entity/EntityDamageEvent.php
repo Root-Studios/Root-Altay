@@ -47,6 +47,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	public const MODIFIER_WEAPON_ENCHANTMENTS = 9;
 	public const MODIFIER_PREVIOUS_DAMAGE_COOLDOWN = 10;
 	public const MODIFIER_ARMOR_HELMET = 11;
+	public const MODIFIER_WEAPON_SPECIAL = 12;
 
 	public const CAUSE_CONTACT = 0;
 	public const CAUSE_ENTITY_ATTACK = 1;
@@ -72,6 +73,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	/** @var float[] */
 	private array $originals;
 	private int $attackCooldown = 10;
+	private float $armorEffectivenessReduction = 0.0;
 
 	/**
 	 * @param float[] $modifiers
@@ -166,6 +168,20 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns the fraction of armour points ignored by this damage source.
+	 */
+	public function getArmorEffectivenessReduction() : float{
+		return $this->armorEffectivenessReduction;
+	}
+
+	public function setArmorEffectivenessReduction(float $reduction) : void{
+		if($reduction < 0.0 || $reduction > 1.0){
+			throw new \InvalidArgumentException("Armor effectiveness reduction must be between 0 and 1");
+		}
+		$this->armorEffectivenessReduction = $reduction;
 	}
 
 	/**

@@ -195,6 +195,7 @@ final class KnownTranslationKeys{
 	public const ENCHANTMENT_LOOTBONUS = "enchantment.lootBonus";
 	public const ENCHANTMENT_LOOTBONUSDIGGER = "enchantment.lootBonusDigger";
 	public const ENCHANTMENT_LOOTBONUSFISHING = "enchantment.lootBonusFishing";
+	public const ENCHANTMENT_LUNGE = "enchantment.lunge";
 	public const ENCHANTMENT_MENDING = "enchantment.mending";
 	public const ENCHANTMENT_OXYGEN = "enchantment.oxygen";
 	public const ENCHANTMENT_PROTECT_ALL = "enchantment.protect.all";

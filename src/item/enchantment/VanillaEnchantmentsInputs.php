@@ -173,7 +173,16 @@ final class VanillaEnchantmentsInputs extends RegistrySource{
 			fn(int $level) : int => 20 * ($level - 1) + 10,
 			50
 		));
-		//TODO: smite, bane of arthropods, looting (these don't make sense now because their applicable mobs don't exist yet)
+		//TODO: smite, bane of arthropods (these don't make sense now because their applicable mobs don't exist yet)
+		self::register("LOOTING", new Enchantment(
+			KnownTranslationFactory::enchantment_lootBonus(),
+			Rarity::RARE,
+			0,
+			0,
+			3,
+			fn(int $level) : int => 9 * ($level - 1) + 15,
+			50
+		));
 
 		self::register("EFFICIENCY", new Enchantment(
 			KnownTranslationFactory::enchantment_digging(),
@@ -277,6 +286,43 @@ final class VanillaEnchantmentsInputs extends RegistrySource{
 			3,
 			fn(int $level) : int => 10 * $level,
 			5
+		));
+
+		self::register("DENSITY", new Enchantment(
+			KnownTranslationFactory::enchantment_heavy_weapon_density(),
+			Rarity::COMMON,
+			0,
+			0,
+			5,
+			fn(int $level) : int => 8 * ($level - 1) + 5,
+			20
+		));
+		self::register("BREACH", new Enchantment(
+			KnownTranslationFactory::enchantment_heavy_weapon_breach(),
+			Rarity::RARE,
+			0,
+			0,
+			4,
+			fn(int $level) : int => 9 * ($level - 1) + 15,
+			50
+		));
+		self::register("WIND_BURST", new Enchantment(
+			KnownTranslationFactory::enchantment_heavy_weapon_windburst(),
+			Rarity::RARE,
+			0,
+			0,
+			3,
+			fn(int $level) : int => 9 * ($level - 1) + 15,
+			50
+		));
+		self::register("LUNGE", new Enchantment(
+			KnownTranslationFactory::enchantment_lunge(),
+			Rarity::RARE,
+			0,
+			0,
+			3,
+			fn(int $level) : int => 9 * ($level - 1) + 5,
+			20
 		));
 
 		self::register("LUCK_OF_THE_SEA", new Enchantment(

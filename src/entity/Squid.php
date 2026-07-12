@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\entity\animation\SquidInkCloudAnimation;
+use pocketmine\entity\utils\LootingDropHelper;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
@@ -122,7 +123,7 @@ class Squid extends WaterAnimal{
 
 	public function getDrops() : array{
 		return [
-			VanillaItems::INK_SAC()->setCount(mt_rand(1, 3))
+			VanillaItems::INK_SAC()->setCount(LootingDropHelper::discrete($this, 1, 3))
 		];
 	}
 

@@ -39,6 +39,8 @@ use pocketmine\utils\RegistrySource;
 use pocketmine\world\World;
 use function is_int;
 use function mb_strtoupper;
+use function str_replace;
+use function ucwords;
 
 /**
  * @internal
@@ -239,6 +241,7 @@ final class VanillaItemsInputs extends RegistrySource{
 		self::register("leather", fn(IID $id) => new Item($id, "Leather"));
 		self::register("lingering_potion", fn(IID $id) => new SplashPotion($id, "Lingering Potion", linger: true));
 		self::register("magma_cream", fn(IID $id) => new Item($id, "Magma Cream"));
+		self::register("mace", fn(IID $id) => new Mace($id, "Mace", [EnchantmentTags::MACE]));
 		self::registerDelayed("mangrove_sign", fn(string $name) : ItemBlockWallOrFloor => new ItemBlockWallOrFloor(self::makeIID($name), Blocks::MANGROVE_SIGN(), Blocks::MANGROVE_WALL_SIGN()));
 		self::registerDelayed("mangrove_hanging_sign", fn(string $name) : HangingSign => new HangingSign(self::makeIID($name), "Mangrove Hanging Sign", Blocks::MANGROVE_CEILING_CENTER_HANGING_SIGN(), Blocks::MANGROVE_CEILING_EDGES_HANGING_SIGN(), Blocks::MANGROVE_WALL_HANGING_SIGN()));
 		self::register("medicine", fn(IID $id) => new Medicine($id, "Medicine"));
@@ -338,6 +341,7 @@ final class VanillaItemsInputs extends RegistrySource{
 		self::registerDelayed("water_bucket", fn(string $name) : LiquidBucket => new LiquidBucket(self::makeIID($name), "Water Bucket", Blocks::WATER()));
 		self::register("wheat", fn(IID $id) => new Item($id, "Wheat"));
 		self::register("wheat_seeds", fn(IID $id) => new WheatSeeds($id, "Wheat Seeds"));
+		self::register("wind_charge", fn(IID $id) => new WindCharge($id, "Wind Charge"));
 		self::register("writable_book", fn(IID $id) => new WritableBook($id, "Book & Quill"));
 		self::register("written_book", fn(IID $id) => new WrittenBook($id, "Written Book"));
 
@@ -380,6 +384,7 @@ final class VanillaItemsInputs extends RegistrySource{
 			self::register($idPrefix . "_pickaxe", fn(IID $id) => new Pickaxe($id, $namePrefix . " Pickaxe", $tier, [EnchantmentTags::PICKAXE]));
 			self::register($idPrefix . "_shovel", fn(IID $id) => new Shovel($id, $namePrefix . " Shovel", $tier, [EnchantmentTags::SHOVEL]));
 			self::register($idPrefix . "_sword", fn(IID $id) => new Sword($id, $namePrefix . " Sword", $tier, [EnchantmentTags::SWORD]));
+			self::register($idPrefix . "_spear", fn(IID $id) => new Spear($id, $namePrefix . " Spear", $tier, [EnchantmentTags::SPEAR]));
 		}
 	}
 

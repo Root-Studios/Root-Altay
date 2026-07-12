@@ -405,7 +405,16 @@ final class ItemTypeIds{
 	public const SHELTER_POTTERY_SHERD = 20364;
 	public const SKULL_POTTERY_SHERD = 20365;
 	public const SNORT_POTTERY_SHERD = 20366;
-	public const FIRST_UNUSED_ITEM_ID = 20367;
+	public const MACE = 20367;
+	public const WIND_CHARGE = 20368;
+	public const WOODEN_SPEAR = 20369;
+	public const STONE_SPEAR = 20370;
+	public const COPPER_SPEAR = 20371;
+	public const IRON_SPEAR = 20372;
+	public const GOLDEN_SPEAR = 20373;
+	public const DIAMOND_SPEAR = 20374;
+	public const NETHERITE_SPEAR = 20375;
+	public const FIRST_UNUSED_ITEM_ID = 20376;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_ITEM_ID;
 
