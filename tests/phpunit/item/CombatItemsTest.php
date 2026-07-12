@@ -52,6 +52,8 @@ final class CombatItemsTest extends TestCase{
 	public function testSpearStats() : void{
 		$expectedAttackPoints = [2, 3, 3, 4, 2, 5, 6];
 		$expectedDurability = [60, 130, 190, 250, 30, 1560, 2030];
+		$expectedActivationDelay = [0.75, 0.65, 0.65, 0.6, 0.7, 0.5, 0.4];
+		$expectedCooldown = [13, 17, 17, 19, 15, 21, 23];
 		$spears = [
 			VanillaItems::WOODEN_SPEAR(),
 			VanillaItems::STONE_SPEAR(),
@@ -65,6 +67,8 @@ final class CombatItemsTest extends TestCase{
 		foreach($spears as $index => $spear){
 			self::assertSame($expectedAttackPoints[$index], $spear->getAttackPoints());
 			self::assertSame($expectedDurability[$index], $spear->getMaxDurability());
+			self::assertEqualsWithDelta($expectedActivationDelay[$index], $spear->getTierActivationDelay(), 0.000001);
+			self::assertSame($expectedCooldown[$index], $spear->getTierCooldown());
 			self::assertContains(VanillaEnchantments::LUNGE(), AvailableEnchantmentRegistry::getInstance()->getPrimaryEnchantmentsForItem($spear));
 			self::assertContains(VanillaEnchantments::LOOTING(), AvailableEnchantmentRegistry::getInstance()->getPrimaryEnchantmentsForItem($spear));
 		}

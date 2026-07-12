@@ -21,27 +21,26 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\world\sound;
 
-/**
- * Tags used by items to determine their cooldown group.
- *
- * These tag values are not related to Minecraft internal IDs.
- * They only share a visual similarity because these are the most obvious values to use.
- * Any arbitrary string can be used.
- *
- * @see Item::getCooldownTag()
- */
-final class ItemCooldownTags{
+use pocketmine\item\ToolTier;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
 
-	private function __construct(){
-		//NOOP
+class SpearAttackSound implements Sound{
+	public function __construct(
+		private ToolTier $tier,
+		private bool $hit
+	){
 	}
 
-	public const CHORUS_FRUIT = "chorus_fruit";
-	public const ENDER_PEARL = "ender_pearl";
-	public const WIND_CHARGE = "wind_charge";
-	public const SHIELD = "shield";
-	public const SPEAR = "spear";
-	public const GOAT_HORN = "goat_horn";
+	public function encode(Vector3 $pos) : array{
+		if($this->tier === ToolTier::WOOD){
+			$sound = $this->hit ? LevelSoundEvent::ITEM_WOODEN_SPEAR_ATTACK_HIT : LevelSoundEvent::ITEM_WOODEN_SPEAR_ATTACK_MISS;
+		}else{
+			$sound = $this->hit ? LevelSoundEvent::ITEM_SPEAR_ATTACK_HIT : LevelSoundEvent::ITEM_SPEAR_ATTACK_MISS;
+		}
+		return [LevelSoundEventPacket::nonActorSound($sound, $pos, false)];
+	}
 }

@@ -331,6 +331,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected ?RideableEntity $ridingVehicle = null;
 
 	protected ?SurvivalBlockBreakHandler $blockBreakHandler = null;
+	private float $currentVelocity = 0.0;
+	private int $pendingSpearDurabilityDamage = 0;
 
 	public function __construct(Server $server, NetworkSession $session, PlayerInfo $playerInfo, bool $authenticated, Location $spawnLocation, ?CompoundTag $namedtag){
 		$username = TextFormat::clean($playerInfo->getUsername());
@@ -754,12 +756,36 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	}
 
 	public function setUsingItem(bool $value) : void{
+		if(!$value && $this->isUsingItem()){
+			$this->flushPendingSpearDurabilityDamage();
+		}
 		$this->startAction = $value ? $this->server->getTick() : -1;
 		if(!$value){
 			$this->itemUseBlockPosition = null;
 			$this->itemUseBlockClickOffset = null;
 		}
 		$this->networkPropertiesDirty = true;
+	}
+
+	/** Queues charge-hit wear so its inventory update cannot cancel the charge client-side. */
+	public function queueSpearDurabilityDamage() : void{
+		++$this->pendingSpearDurabilityDamage;
+	}
+
+	private function flushPendingSpearDurabilityDamage() : void{
+		if($this->pendingSpearDurabilityDamage === 0){
+			return;
+		}
+
+		$damage = $this->pendingSpearDurabilityDamage;
+		$this->pendingSpearDurabilityDamage = 0;
+		$item = $this->inventory->getItemInHand();
+		if(!$item instanceof Spear){
+			return;
+		}
+
+		$item->applyDamage($damage);
+		$this->inventory->setItemInHand($item);
 	}
 
 	private function setUsingItemOnBlock(Vector3 $pos, int $face, Vector3 $clickOffset) : void{
@@ -1531,6 +1557,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	 * Fires movement events and synchronizes player movement, every tick.
 	 */
 	protected function processMostRecentMovements() : void{
+		$this->currentVelocity = $this->location->subtractVector($this->lastLocation)->length() / Server::TARGET_SECONDS_PER_TICK;
 		$now = microtime(true);
 		$multiplier = $this->lastMovementProcess !== null ? ($now - $this->lastMovementProcess) * 20 : 1;
 		$exceededRateLimit = $this->moveRateLimit < 0;
@@ -1658,6 +1685,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			}
 
 			$item = $this->getInventory()->getItemInHand();
+			if($this->isUsingItem() && $item instanceof Spear){
+				$item->onUsingTick($this, $this->getItemUseDuration());
+			}
 			if($this->isUsingItem() && $item instanceof ItemUseOnBlockHandler){
 				$this->tickItemUseOnBlock($item);
 			}
@@ -1685,6 +1715,13 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$this->timings->stopTiming();
 
 		return true;
+	}
+
+	/**
+	 * Returns the player's movement speed measured from the last server tick, in blocks per second.
+	 */
+	public function getCurrentVelocity() : float{
+		return $this->currentVelocity;
 	}
 
 	public function canEat() : bool{
@@ -2163,17 +2200,8 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		if($heldItem instanceof Mace){
 			$ev->setModifier($heldItem->getSmashDamageBonus($fallDistance), EntityDamageEvent::MODIFIER_WEAPON_SPECIAL);
 			$ev->setArmorEffectivenessReduction($heldItem->getArmorEffectivenessReduction());
-		}elseif($heldItem instanceof Spear){
-			if(!$heldItem->isTargetInJabRange($this, $entity)){
-				$ev->cancel();
-			}elseif($this->isUsingItem()){
-				$chargeDamage = $heldItem->getChargeAttackDamage($this, $entity);
-				if($chargeDamage === null){
-					$ev->cancel();
-				}else{
-					$ev->setModifier($chargeDamage - $heldItem->getAttackPoints(), EntityDamageEvent::MODIFIER_WEAPON_SPECIAL);
-				}
-			}
+		}elseif($heldItem instanceof Spear && ($this->isUsingItem() || $this->hasItemCooldown($heldItem) || !$heldItem->isTargetInJabRange($this, $entity))){
+			$ev->cancel();
 		}
 		if(!$this->canInteract($entity->getLocation(), self::MAX_REACH_DISTANCE_ENTITY_INTERACTION)){
 			$this->logger->debug("Cancelled attack of entity " . $entity->getId() . " due to not currently being interactable");
@@ -2225,6 +2253,7 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$heldItem->onSuccessfulSmash($this, $entity, $fallDistance);
 		}elseif($isSpearJab){
 			$heldItem->tryLunge($this);
+			$this->resetItemCooldown($heldItem, $heldItem->getTierCooldown());
 		}
 
 		if($this->isAlive()){
@@ -2249,9 +2278,19 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		$ev->call();
 		if(!$ev->isCancelled()){
 			$item = $this->inventory->getItemInHand();
-			$oldItem = clone $item;
-			if($item instanceof Spear && $item->tryLunge($this, true)){
-				$this->returnItemsFromAction($oldItem, $item, []);
+			if($item instanceof Spear){
+				$didHit = $item->handleJabAttack($this);
+				$item = $this->inventory->getItemInHand();
+				if($item instanceof Spear && !$didHit){
+					$oldItem = clone $item;
+					if($item->tryLunge($this, true)){
+						$this->returnItemsFromAction($oldItem, $item, []);
+					}
+				}elseif($item instanceof Spear){
+					$item->tryLunge($this);
+				}
+				$this->broadcastAnimation(new ArmSwingAnimation($this), $this->getViewers());
+				return;
 			}
 			$this->broadcastSound(new EntityAttackNoDamageSound());
 			$this->broadcastAnimation(new ArmSwingAnimation($this), $this->getViewers());
