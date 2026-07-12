@@ -914,8 +914,11 @@ class InGamePacketHandler extends PacketHandler{
 				$this->player->missSwing();
 				break;
 			case PlayerAction::START_ITEM_USE_ON:
+				self::validateFacing($face);
+				$this->player->startUsingHeldItemOnBlock($pos, $face);
+				break;
 			case PlayerAction::STOP_ITEM_USE_ON:
-				//TODO: this has no obvious use and seems only used for analytics in vanilla - ignore it
+				$this->player->setUsingItem(false);
 				break;
 			case PlayerAction::START_USING_ITEM:
 				if(!$this->player->shouldIgnoreChargeableClickAir()){

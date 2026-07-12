@@ -168,6 +168,30 @@ final class ItemSerializerDeserializerRegistrar{
 	 * Registers mappings for item IDs which directly correspond to PocketMine-MP items.
 	 */
 	private function register1to1ItemMappings() : void{
+		$this->map1to1Item(Ids::BRUSH, Items::BRUSH());
+		$this->map1to1Item(Ids::ANGLER_POTTERY_SHERD, Items::ANGLER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::ARCHER_POTTERY_SHERD, Items::ARCHER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::ARMS_UP_POTTERY_SHERD, Items::ARMS_UP_POTTERY_SHERD());
+		$this->map1to1Item(Ids::BLADE_POTTERY_SHERD, Items::BLADE_POTTERY_SHERD());
+		$this->map1to1Item(Ids::BREWER_POTTERY_SHERD, Items::BREWER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::BURN_POTTERY_SHERD, Items::BURN_POTTERY_SHERD());
+		$this->map1to1Item(Ids::DANGER_POTTERY_SHERD, Items::DANGER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::EXPLORER_POTTERY_SHERD, Items::EXPLORER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::FLOW_POTTERY_SHERD, Items::FLOW_POTTERY_SHERD());
+		$this->map1to1Item(Ids::FRIEND_POTTERY_SHERD, Items::FRIEND_POTTERY_SHERD());
+		$this->map1to1Item(Ids::GUSTER_POTTERY_SHERD, Items::GUSTER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::HEART_POTTERY_SHERD, Items::HEART_POTTERY_SHERD());
+		$this->map1to1Item(Ids::HEARTBREAK_POTTERY_SHERD, Items::HEARTBREAK_POTTERY_SHERD());
+		$this->map1to1Item(Ids::HOWL_POTTERY_SHERD, Items::HOWL_POTTERY_SHERD());
+		$this->map1to1Item(Ids::MINER_POTTERY_SHERD, Items::MINER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::MOURNER_POTTERY_SHERD, Items::MOURNER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::PLENTY_POTTERY_SHERD, Items::PLENTY_POTTERY_SHERD());
+		$this->map1to1Item(Ids::PRIZE_POTTERY_SHERD, Items::PRIZE_POTTERY_SHERD());
+		$this->map1to1Item(Ids::SCRAPE_POTTERY_SHERD, Items::SCRAPE_POTTERY_SHERD());
+		$this->map1to1Item(Ids::SHEAF_POTTERY_SHERD, Items::SHEAF_POTTERY_SHERD());
+		$this->map1to1Item(Ids::SHELTER_POTTERY_SHERD, Items::SHELTER_POTTERY_SHERD());
+		$this->map1to1Item(Ids::SKULL_POTTERY_SHERD, Items::SKULL_POTTERY_SHERD());
+		$this->map1to1Item(Ids::SNORT_POTTERY_SHERD, Items::SNORT_POTTERY_SHERD());
 		$this->map1to1Item(Ids::ACACIA_BOAT, Items::ACACIA_BOAT());
 		$this->map1to1Item(Ids::ACACIA_HANGING_SIGN, Items::ACACIA_HANGING_SIGN());
 		$this->map1to1Item(Ids::ACACIA_SIGN, Items::ACACIA_SIGN());

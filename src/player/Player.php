@@ -105,6 +105,7 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\MeleeWeaponEnchantment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemUseResult;
+use pocketmine\item\ItemUseOnBlockHandler;
 use pocketmine\item\Releasable;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Language;
@@ -304,6 +305,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 	protected string $locale = "en_US";
 
 	protected int $startAction = -1;
+	private ?Vector3 $itemUseBlockPosition = null;
+	private int $itemUseBlockFace = 0;
+	private ?Vector3 $itemUseBlockClickOffset = null;
 
 	private int $ignoreChargeableClickAirUntilTick = -1;
 	private bool $awaitingConsumableRelease = false;
@@ -749,7 +753,33 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 
 	public function setUsingItem(bool $value) : void{
 		$this->startAction = $value ? $this->server->getTick() : -1;
+		if(!$value){
+			$this->itemUseBlockPosition = null;
+			$this->itemUseBlockClickOffset = null;
+		}
 		$this->networkPropertiesDirty = true;
+	}
+
+	private function setUsingItemOnBlock(Vector3 $pos, int $face, Vector3 $clickOffset) : void{
+		$this->startAction = $this->server->getTick();
+		$this->itemUseBlockPosition = $pos->floor();
+		$this->itemUseBlockFace = $face;
+		$this->itemUseBlockClickOffset = clone $clickOffset;
+		$this->networkPropertiesDirty = true;
+	}
+
+	public function startUsingHeldItemOnBlock(Vector3 $pos, int $face, ?Vector3 $clickOffset = null) : bool{
+		if(!$this->canInteract($pos->add(0.5, 0.5, 0.5), $this->isCreative() ? self::MAX_REACH_DISTANCE_CREATIVE : self::MAX_REACH_DISTANCE_SURVIVAL)){
+			return false;
+		}
+		$item = $this->inventory->getItemInHand();
+		$block = $this->getWorld()->getBlock($pos);
+		$clickOffset ??= new Vector3(0.5, 0.5, 0.5);
+		if(!$item instanceof ItemUseOnBlockHandler || !$item->canStartUsingItemOnBlock($this, $block, $face, $clickOffset)){
+			return false;
+		}
+		$this->setUsingItemOnBlock($pos, $face, $clickOffset);
+		return true;
 	}
 
 	/**
@@ -1618,6 +1648,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			}
 
 			$item = $this->getInventory()->getItemInHand();
+			if($this->isUsingItem() && $item instanceof ItemUseOnBlockHandler){
+				$this->tickItemUseOnBlock($item);
+			}
 			if($item instanceof ConsumableItem && $this->isUsingItem()){
 				if($this->getItemUseDuration() >= $item->getMinUseDuration()){
 					$this->consumeHeldItem();
@@ -2052,6 +2085,9 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 			$returnedItems = [];
 			if($this->getWorld()->useItemOn($pos, $item, $face, $clickOffset, $this, true, $returnedItems)){
 				$this->returnItemsFromAction($oldItem, $item, $returnedItems);
+				if($item instanceof ItemUseOnBlockHandler && $item->canStartUsingItemOnBlock($this, $this->getWorld()->getBlock($pos), $face, $clickOffset)){
+					$this->setUsingItemOnBlock($pos, $face, $clickOffset);
+				}
 				return true;
 			}
 		}else{
@@ -2059,6 +2095,28 @@ class Player extends Human implements CommandSender, ChunkListener, IPlayer, Nev
 		}
 
 		return false;
+	}
+
+	private function tickItemUseOnBlock(ItemUseOnBlockHandler $item) : void{
+		$pos = $this->itemUseBlockPosition;
+		$clickOffset = $this->itemUseBlockClickOffset;
+		if($pos === null || $clickOffset === null || !$this->canInteract($pos->add(0.5, 0.5, 0.5), $this->isCreative() ? self::MAX_REACH_DISTANCE_CREATIVE : self::MAX_REACH_DISTANCE_SURVIVAL)){
+			$this->setUsingItem(false);
+			return;
+		}
+		$block = $this->getWorld()->getBlock($pos);
+		if(!$item->canStartUsingItemOnBlock($this, $block, $this->itemUseBlockFace, $clickOffset)){
+			$this->setUsingItem(false);
+			return;
+		}
+		$oldItem = clone $item;
+		$returnedItems = [];
+		$result = $item->onUsingItemOnBlockTick($this, $block, $this->itemUseBlockFace, $clickOffset, $this->getItemUseDuration(), $returnedItems);
+		if($result === ItemUseResult::FAIL){
+			$this->setUsingItem(false);
+		}elseif($result === ItemUseResult::SUCCESS){
+			$this->returnItemsFromAction($oldItem, $item, $returnedItems);
+		}
 	}
 
 	/**

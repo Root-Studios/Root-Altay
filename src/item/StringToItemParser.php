@@ -1049,6 +1049,8 @@ final class StringToItemParser extends StringToTParser{
 		$result->registerBlock("sandstone_slab", fn() => Blocks::SANDSTONE_SLAB());
 		$result->registerBlock("sandstone_stairs", fn() => Blocks::SANDSTONE_STAIRS());
 		$result->registerBlock("sandstone_wall", fn() => Blocks::SANDSTONE_WALL());
+		$result->registerBlock("suspicious_gravel", fn() => Blocks::SUSPICIOUS_GRAVEL());
+		$result->registerBlock("suspicious_sand", fn() => Blocks::SUSPICIOUS_SAND());
 		$result->registerBlock("sapling", fn() => Blocks::OAK_SAPLING());
 		$result->registerBlock("acacia_shelf", fn() => Blocks::ACACIA_SHELF());
 		$result->registerBlock("bamboo_shelf", fn() => Blocks::BAMBOO_SHELF());
@@ -1343,6 +1345,12 @@ final class StringToItemParser extends StringToTParser{
 		$result->register("bowl", fn() => Items::BOWL());
 		$result->register("bread", fn() => Items::BREAD());
 		$result->register("brick", fn() => Items::BRICK());
+		$result->register("brush", fn() => Items::BRUSH());
+		foreach(["angler", "archer", "arms_up", "blade", "brewer", "burn", "danger", "explorer", "flow", "friend", "guster", "heart", "heartbreak", "howl", "miner", "mourner", "plenty", "prize", "scrape", "sheaf", "shelter", "skull", "snort"] as $pattern){
+			$name = $pattern . "_pottery_sherd";
+			$method = strtoupper($name);
+			$result->register($name, fn() => Items::$method());
+		}
 		$result->register("bucket", fn() => Items::BUCKET());
 		$result->register("carrot", fn() => Items::CARROT());
 		$result->register("chain_boots", fn() => Items::CHAINMAIL_BOOTS());

@@ -381,7 +381,31 @@ final class ItemTypeIds{
 
 	public const BOLT_ARMOR_TRIM_SMITHING_TEMPLATE = 20341;
 	public const FLOW_ARMOR_TRIM_SMITHING_TEMPLATE = 20342;
-	public const FIRST_UNUSED_ITEM_ID = 20343;
+	public const BRUSH = 20343;
+	public const ANGLER_POTTERY_SHERD = 20344;
+	public const ARCHER_POTTERY_SHERD = 20345;
+	public const ARMS_UP_POTTERY_SHERD = 20346;
+	public const BLADE_POTTERY_SHERD = 20347;
+	public const BREWER_POTTERY_SHERD = 20348;
+	public const BURN_POTTERY_SHERD = 20349;
+	public const DANGER_POTTERY_SHERD = 20350;
+	public const EXPLORER_POTTERY_SHERD = 20351;
+	public const FLOW_POTTERY_SHERD = 20352;
+	public const FRIEND_POTTERY_SHERD = 20353;
+	public const GUSTER_POTTERY_SHERD = 20354;
+	public const HEART_POTTERY_SHERD = 20355;
+	public const HEARTBREAK_POTTERY_SHERD = 20356;
+	public const HOWL_POTTERY_SHERD = 20357;
+	public const MINER_POTTERY_SHERD = 20358;
+	public const MOURNER_POTTERY_SHERD = 20359;
+	public const PLENTY_POTTERY_SHERD = 20360;
+	public const PRIZE_POTTERY_SHERD = 20361;
+	public const SCRAPE_POTTERY_SHERD = 20362;
+	public const SHEAF_POTTERY_SHERD = 20363;
+	public const SHELTER_POTTERY_SHERD = 20364;
+	public const SKULL_POTTERY_SHERD = 20365;
+	public const SNORT_POTTERY_SHERD = 20366;
+	public const FIRST_UNUSED_ITEM_ID = 20367;
 
 	private static int $nextDynamicId = self::FIRST_UNUSED_ITEM_ID;
 
