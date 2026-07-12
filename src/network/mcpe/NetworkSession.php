@@ -1319,7 +1319,9 @@ class NetworkSession{
 			$this->syncWorldTime($world->getTime());
 			$this->syncWorldDifficulty($world->getDifficulty());
 			$this->syncWorldSpawnPoint($world->getSpawnLocation());
-			//TODO: weather needs to be synced here (when implemented)
+			foreach($world->getWeatherPackets() as $packet){
+				$this->sendDataPacket($packet);
+			}
 		}
 	}
 

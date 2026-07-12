@@ -108,5 +108,7 @@ final class YmlServerProperties{
 	public const TICKS_PER_AUTOSAVE = 'ticks-per.autosave';
 	public const TIMINGS = 'timings';
 	public const TIMINGS_HOST = 'timings.host';
+	public const WEATHER = 'weather';
+	public const WEATHER_DISABLED_WORLDS = 'weather.disabled-worlds';
 	public const WORLDS = 'worlds';
 }

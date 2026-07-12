@@ -550,6 +550,7 @@ final class KnownTranslationKeys{
 	public const POCKETMINE_PERMISSION_COMMAND_UNBAN_IP = "pocketmine.permission.command.unban.ip";
 	public const POCKETMINE_PERMISSION_COMMAND_UNBAN_PLAYER = "pocketmine.permission.command.unban.player";
 	public const POCKETMINE_PERMISSION_COMMAND_VERSION = "pocketmine.permission.command.version";
+	public const POCKETMINE_PERMISSION_COMMAND_WEATHER = "pocketmine.permission.command.weather";
 	public const POCKETMINE_PERMISSION_COMMAND_WHITELIST_ADD = "pocketmine.permission.command.whitelist.add";
 	public const POCKETMINE_PERMISSION_COMMAND_WHITELIST_DISABLE = "pocketmine.permission.command.whitelist.disable";
 	public const POCKETMINE_PERMISSION_COMMAND_WHITELIST_ENABLE = "pocketmine.permission.command.whitelist.enable";

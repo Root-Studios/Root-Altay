@@ -73,7 +73,9 @@ use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\NetworkBroadcastUtils;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\types\BlockPosition;
+use pocketmine\network\mcpe\protocol\types\LevelEvent;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\promise\Promise;
@@ -123,6 +125,7 @@ use function count;
 use function floor;
 use function get_class;
 use function gettype;
+use function in_array;
 use function is_a;
 use function is_object;
 use function max;
@@ -283,6 +286,11 @@ class World implements ChunkManager{
 
 	private string $folderName;
 	private string $displayName;
+	private bool $weatherEnabled;
+	private int $rainTime;
+	private float $rainLevel;
+	private int $lightningTime;
+	private float $lightningLevel;
 
 	/**
 	 * @var Chunk[]
@@ -490,6 +498,16 @@ class World implements ChunkManager{
 		$this->worldId = self::$worldIdCounter++;
 
 		$this->displayName = $this->provider->getWorldData()->getName();
+		$disabledWeatherWorlds = array_map('strtolower', $server->getConfigGroup()->getProperty(YmlServerProperties::WEATHER_DISABLED_WORLDS, []));
+		$this->weatherEnabled = !in_array(strtolower($name), $disabledWeatherWorlds, true);
+		$worldData = $this->provider->getWorldData();
+		$this->rainTime = $worldData->getRainTime();
+		$this->rainLevel = $worldData->getRainLevel();
+		$this->lightningTime = $worldData->getLightningTime();
+		$this->lightningLevel = $worldData->getLightningLevel();
+		if(!$this->weatherEnabled){
+			$this->rainLevel = $this->lightningLevel = 0.0;
+		}
 		$this->logger = new \PrefixedLogger($server->getLogger(), "World: $this->displayName");
 
 		$this->blockStateRegistry = RuntimeBlockStateRegistry::getInstance();
@@ -928,6 +946,7 @@ class World implements ChunkManager{
 	}
 
 	protected function actuallyDoTick(int $currentTick) : void{
+		$this->tickWeather();
 		if(!$this->stopTime){
 			//this simulates an overflow, as would happen in any language which doesn't do stupid things to var types
 			if($this->time === PHP_INT_MAX){
@@ -1051,6 +1070,71 @@ class World implements ChunkManager{
 		}
 
 		$this->packetBuffersByChunk = [];
+	}
+
+	private function tickWeather() : void{
+		if(!$this->weatherEnabled){
+			return;
+		}
+		if(--$this->rainTime <= 0){
+			$this->setRainLevel($this->rainLevel > 0.0 ? 0.0 : 1.0);
+			$this->rainTime = $this->rainLevel > 0.0 ? mt_rand(6000, 24000) : mt_rand(12000, 180000);
+		}
+		if($this->rainLevel <= 0.0){
+			if($this->lightningLevel > 0.0){
+				$this->setLightningLevel(0.0);
+			}
+			return;
+		}
+		if(--$this->lightningTime <= 0){
+			$this->setLightningLevel($this->lightningLevel > 0.0 ? 0.0 : 1.0);
+			$this->lightningTime = $this->lightningLevel > 0.0 ? mt_rand(3600, 15600) : mt_rand(12000, 180000);
+		}
+	}
+
+	public function isWeatherEnabled() : bool{
+		return $this->weatherEnabled;
+	}
+
+	public function getRainLevel() : float{
+		return $this->rainLevel;
+	}
+
+	public function getLightningLevel() : float{
+		return $this->lightningLevel;
+	}
+
+	public function setRainTime(int $ticks) : void{
+		$this->rainTime = max(1, $ticks);
+	}
+
+	public function setLightningTime(int $ticks) : void{
+		$this->lightningTime = max(1, $ticks);
+	}
+
+	public function setRainLevel(float $level) : void{
+		$this->rainLevel = max(0.0, min(1.0, $level));
+		if($this->rainLevel <= 0.0 && $this->lightningLevel > 0.0){
+			$this->lightningLevel = 0.0;
+		}
+		NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+	}
+
+	public function setLightningLevel(float $level) : void{
+		$this->lightningLevel = max(0.0, min(1.0, $level));
+		if($this->lightningLevel > 0.0){
+			$this->rainLevel = 1.0;
+		}
+		NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+	}
+
+	/** @return LevelEventPacket[] */
+	public function getWeatherPackets() : array{
+		$zero = Vector3::zero();
+		return [
+			LevelEventPacket::create($this->rainLevel > 0.0 ? LevelEvent::START_RAIN : LevelEvent::STOP_RAIN, (int) ($this->rainLevel * 65535), $zero),
+			LevelEventPacket::create($this->lightningLevel > 0.0 ? LevelEvent::START_THUNDER : LevelEvent::STOP_THUNDER, (int) ($this->lightningLevel * 65535), $zero)
+		];
 	}
 
 	public function checkSleep() : void{
@@ -1424,6 +1508,11 @@ class World implements ChunkManager{
 	}
 
 	public function save(bool $force = false) : bool{
+		$worldData = $this->provider->getWorldData();
+		$worldData->setRainTime($this->rainTime);
+		$worldData->setRainLevel($this->rainLevel);
+		$worldData->setLightningTime($this->lightningTime);
+		$worldData->setLightningLevel($this->lightningLevel);
 
 		if(!$this->getAutoSave() && !$force){
 			return false;
