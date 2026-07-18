@@ -28,6 +28,9 @@ use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\Limits;
 use pocketmine\utils\TextFormat;
@@ -48,21 +51,53 @@ class EffectCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$effectAliases = [];
+		foreach(StringToEffectParser::getInstance()->getKnownAliases() as $alias){
+			$effectAliases[] = (string) $alias;
+		}
+		$effect = $this->getHardEnum($hardcodedEnums, "Effect", $effectAliases);
+		$boolean = $this->getHardEnum($hardcodedEnums, "Boolean", ["true", "false"]);
+		$clear = $this->getHardEnum($hardcodedEnums, "EffectClear", ["clear"]);
+		$infinite = $this->getHardEnum($hardcodedEnums, "EffectDuration", ["infinite"]);
+
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("clear", $clear, 0),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("effect", $effect, 0),
+				CommandParameter::standard("seconds", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+				CommandParameter::standard("amplifier", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+				CommandParameter::enum("hideParticles", $boolean, 0, true),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("effect", $effect, 0),
+				CommandParameter::enum("duration", $infinite, 0),
+				CommandParameter::standard("amplifier", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+				CommandParameter::enum("hideParticles", $boolean, 0, true),
+			]),
+		];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) < 2){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$player = $this->fetchPermittedPlayerTarget($sender, $args[0], DefaultPermissionNames::COMMAND_EFFECT_SELF, DefaultPermissionNames::COMMAND_EFFECT_OTHER);
-		if($player === null){
+		$players = $this->fetchPermittedPlayerTargets($sender, $args[0], DefaultPermissionNames::COMMAND_EFFECT_SELF, DefaultPermissionNames::COMMAND_EFFECT_OTHER);
+		if($players === null){
 			return true;
 		}
-		$effectManager = $player->getEffects();
 
 		if(strtolower($args[1]) === "clear"){
-			$effectManager->clear();
-
-			$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed_all($player->getDisplayName()));
+			foreach($players as $player){
+				$player->getEffects()->clear();
+				$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed_all($player->getDisplayName()));
+			}
 			return true;
 		}
 
@@ -104,26 +139,29 @@ class EffectCommand extends VanillaCommand{
 			}
 		}
 
-		if($duration === 0){
-			if(!$effectManager->has($effect)){
-				if(count($effectManager->all()) === 0){
-					$sender->sendMessage(KnownTranslationFactory::commands_effect_failure_notActive_all($player->getDisplayName()));
-				}else{
-					$sender->sendMessage(KnownTranslationFactory::commands_effect_failure_notActive($effect->getName(), $player->getDisplayName()));
+		foreach($players as $player){
+			$effectManager = $player->getEffects();
+			if($duration === 0){
+				if(!$effectManager->has($effect)){
+					if(count($effectManager->all()) === 0){
+						$sender->sendMessage(KnownTranslationFactory::commands_effect_failure_notActive_all($player->getDisplayName()));
+					}else{
+						$sender->sendMessage(KnownTranslationFactory::commands_effect_failure_notActive($effect->getName(), $player->getDisplayName()));
+					}
+					continue;
 				}
-				return true;
-			}
 
-			$effectManager->remove($effect);
-			$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed($effect->getName(), $player->getDisplayName()));
-		}else{
-			$instance = new EffectInstance($effect, $duration, $amplification, $visible, infinite: $infinite);
-			$effectManager->add($instance);
-
-			if($infinite){
-				self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success_infinite($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName()));
+				$effectManager->remove($effect);
+				$sender->sendMessage(KnownTranslationFactory::commands_effect_success_removed($effect->getName(), $player->getDisplayName()));
 			}else{
-				self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
+				$instance = new EffectInstance($effect, $duration, $amplification, $visible, infinite: $infinite);
+				$effectManager->add($instance);
+
+				if($infinite){
+					self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success_infinite($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName()));
+				}else{
+					self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_effect_success($effect->getName(), (string) $instance->getAmplifier(), $player->getDisplayName(), (string) ($instance->getDuration() / 20)));
+				}
 			}
 		}
 

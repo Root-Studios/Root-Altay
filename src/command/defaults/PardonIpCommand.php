@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use function count;
 use function inet_pton;
@@ -41,6 +44,12 @@ class PardonIpCommand extends VanillaCommand{
 			["unban-ip"]
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_UNBAN_IP);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("address", AvailableCommandsPacket::ARG_TYPE_STRING),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

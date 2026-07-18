@@ -27,6 +27,8 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\scheduler\BulkCurlTask;
@@ -60,6 +62,13 @@ class TimingsCommand extends VanillaCommand{
 			KnownTranslationFactory::pocketmine_command_timings_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_TIMINGS);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$action = $this->getHardEnum($hardcodedEnums, "TimingsAction", ["on", "off", "reset", "report", "merged", "paste"]);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("action", $action, 0),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

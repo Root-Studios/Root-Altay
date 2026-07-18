@@ -7,6 +7,9 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use function count;
@@ -18,6 +21,14 @@ final class WeatherCommand extends VanillaCommand{
 	public function __construct(){
 		parent::__construct("weather", "Changes the weather", "/weather <clear|rain|thunder> [duration]");
 		$this->setPermission(DefaultPermissionNames::COMMAND_WEATHER);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$weather = $this->getHardEnum($hardcodedEnums, "Weather", ["clear", "rain", "thunder"]);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("weather", $weather, 0),
+			CommandParameter::standard("duration", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args) : bool{

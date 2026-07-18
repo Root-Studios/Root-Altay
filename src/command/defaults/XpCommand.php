@@ -27,6 +27,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Attribute;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Limits;
@@ -50,37 +53,52 @@ class XpCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("amount", AvailableCommandsPacket::ARG_TYPE_INT),
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET, 0, true),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::postfixed("levels", "L"),
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET, 0, true),
+			]),
+		];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) < 1){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$player = $this->fetchPermittedPlayerTarget($sender, $args[1] ?? null, DefaultPermissionNames::COMMAND_XP_SELF, DefaultPermissionNames::COMMAND_XP_OTHER);
-		if($player === null){
+		$players = $this->fetchPermittedPlayerTargets($sender, $args[1] ?? null, DefaultPermissionNames::COMMAND_XP_SELF, DefaultPermissionNames::COMMAND_XP_OTHER);
+		if($players === null){
 			return true;
 		}
 
-		$xpManager = $player->getXpManager();
-		if(str_ends_with($args[0], "L")){
-			$xpLevelAttr = $player->getAttributeMap()->get(Attribute::EXPERIENCE_LEVEL) ?? throw new AssumptionFailedError();
-			$maxXpLevel = (int) $xpLevelAttr->getMaxValue();
-			$currentXpLevel = $xpManager->getXpLevel();
-			$xpLevels = $this->getInteger($sender, substr($args[0], 0, -1), -$currentXpLevel, $maxXpLevel - $currentXpLevel);
-			if($xpLevels >= 0){
-				$xpManager->addXpLevels($xpLevels, false);
-				$sender->sendMessage(KnownTranslationFactory::commands_xp_success_levels((string) $xpLevels, $player->getName()));
+		foreach($players as $player){
+			$xpManager = $player->getXpManager();
+			if(str_ends_with($args[0], "L")){
+				$xpLevelAttr = $player->getAttributeMap()->get(Attribute::EXPERIENCE_LEVEL) ?? throw new AssumptionFailedError();
+				$maxXpLevel = (int) $xpLevelAttr->getMaxValue();
+				$currentXpLevel = $xpManager->getXpLevel();
+				$xpLevels = $this->getInteger($sender, substr($args[0], 0, -1), -$currentXpLevel, $maxXpLevel - $currentXpLevel);
+				if($xpLevels >= 0){
+					$xpManager->addXpLevels($xpLevels, false);
+					$sender->sendMessage(KnownTranslationFactory::commands_xp_success_levels((string) $xpLevels, $player->getName()));
+				}else{
+					$xpLevels = abs($xpLevels);
+					$xpManager->subtractXpLevels($xpLevels);
+					$sender->sendMessage(KnownTranslationFactory::commands_xp_success_negative_levels((string) $xpLevels, $player->getName()));
+				}
 			}else{
-				$xpLevels = abs($xpLevels);
-				$xpManager->subtractXpLevels($xpLevels);
-				$sender->sendMessage(KnownTranslationFactory::commands_xp_success_negative_levels((string) $xpLevels, $player->getName()));
-			}
-		}else{
-			$xp = $this->getInteger($sender, $args[0], max: Limits::INT32_MAX);
-			if($xp < 0){
-				$sender->sendMessage(KnownTranslationFactory::commands_xp_failure_widthdrawXp()->prefix(TextFormat::RED));
-			}else{
-				$xpManager->addXp($xp, false);
-				$sender->sendMessage(KnownTranslationFactory::commands_xp_success((string) $xp, $player->getName()));
+				$xp = $this->getInteger($sender, $args[0], max: Limits::INT32_MAX);
+				if($xp < 0){
+					$sender->sendMessage(KnownTranslationFactory::commands_xp_failure_widthdrawXp()->prefix(TextFormat::RED));
+				}else{
+					$xpManager->addXp($xp, false);
+					$sender->sendMessage(KnownTranslationFactory::commands_xp_success((string) $xp, $player->getName()));
+				}
 			}
 		}
 

@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Translatable;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\TextFormat;
 use function array_chunk;
@@ -53,6 +56,18 @@ class HelpCommand extends VanillaCommand{
 			["?"]
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_HELP);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("page", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("command", AvailableCommandsPacket::ARG_TYPE_STRING),
+				CommandParameter::standard("page", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+			]),
+		];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

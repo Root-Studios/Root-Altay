@@ -29,6 +29,9 @@ use pocketmine\item\enchantment\EnchantingHelper;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use function count;
 
@@ -46,20 +49,26 @@ class EnchantCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$aliases = [];
+		foreach(StringToEnchantmentParser::getInstance()->getKnownAliases() as $alias){
+			$aliases[] = (string) $alias;
+		}
+		$enchantment = $this->getHardEnum($hardcodedEnums, "Enchantment", $aliases);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+			CommandParameter::enum("enchantment", $enchantment, 0),
+			CommandParameter::standard("level", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+		])];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) < 2){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$player = $this->fetchPermittedPlayerTarget($sender, $args[0], DefaultPermissionNames::COMMAND_ENCHANT_SELF, DefaultPermissionNames::COMMAND_ENCHANT_OTHER);
-		if($player === null){
-			return true;
-		}
-
-		$item = $player->getInventory()->getItemInHand();
-
-		if($item->isNull()){
-			$sender->sendMessage(KnownTranslationFactory::commands_enchant_noItem());
+		$players = $this->fetchPermittedPlayerTargets($sender, $args[0], DefaultPermissionNames::COMMAND_ENCHANT_SELF, DefaultPermissionNames::COMMAND_ENCHANT_OTHER);
+		if($players === null){
 			return true;
 		}
 
@@ -77,11 +86,18 @@ class EnchantCommand extends VanillaCommand{
 			}
 		}
 
-		//this is necessary to deal with enchanted books, which are a different item type than regular books
-		$enchantedItem = EnchantingHelper::enchantItem($item, [new EnchantmentInstance($enchantment, $level)]);
-		$player->getInventory()->setItemInHand($enchantedItem);
+		foreach($players as $player){
+			$item = $player->getInventory()->getItemInHand();
+			if($item->isNull()){
+				$sender->sendMessage(KnownTranslationFactory::commands_enchant_noItem());
+				continue;
+			}
 
-		self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_enchant_success($player->getName()));
+			//this is necessary to deal with enchanted books, which are a different item type than regular books
+			$enchantedItem = EnchantingHelper::enchantItem($item, [new EnchantmentInstance($enchantment, $level)]);
+			$player->getInventory()->setItemInHand($enchantedItem);
+			self::broadcastCommandMessage($sender, KnownTranslationFactory::commands_enchant_success($player->getName()));
+		}
 		return true;
 	}
 }

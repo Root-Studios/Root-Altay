@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -48,29 +51,44 @@ class SpawnpointCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET, 0, true),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+			]),
+		];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		$target = $this->fetchPermittedPlayerTarget($sender, $args[0] ?? null, DefaultPermissionNames::COMMAND_SPAWNPOINT_SELF, DefaultPermissionNames::COMMAND_SPAWNPOINT_OTHER);
-		if($target === null){
+		$targets = $this->fetchPermittedPlayerTargets($sender, $args[0] ?? null, DefaultPermissionNames::COMMAND_SPAWNPOINT_SELF, DefaultPermissionNames::COMMAND_SPAWNPOINT_OTHER);
+		if($targets === null){
 			return true;
 		}
 
 		if(count($args) === 4){
-			$world = $target->getWorld();
-			$pos = $sender instanceof Player ? $sender->getPosition() : $world->getSpawnLocation();
-			$x = $this->getRelativeDouble($pos->x, $sender, $args[1]);
-			$y = $this->getRelativeDouble($pos->y, $sender, $args[2], World::Y_MIN, World::Y_MAX);
-			$z = $this->getRelativeDouble($pos->z, $sender, $args[3]);
-			$target->setSpawn(new Position($x, $y, $z, $world));
+			foreach($targets as $target){
+				$world = $target->getWorld();
+				$pos = $sender instanceof Player ? $sender->getPosition() : $world->getSpawnLocation();
+				$x = $this->getRelativeDouble($pos->x, $sender, $args[1]);
+				$y = $this->getRelativeDouble($pos->y, $sender, $args[2], World::Y_MIN, World::Y_MAX);
+				$z = $this->getRelativeDouble($pos->z, $sender, $args[3]);
+				$target->setSpawn(new Position($x, $y, $z, $world));
 
-			Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($x, 2), (string) round($y, 2), (string) round($z, 2)));
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($x, 2), (string) round($y, 2), (string) round($z, 2)));
+			}
 
 			return true;
 		}elseif(count($args) <= 1 && $sender instanceof Player){
 			$cpos = $sender->getPosition();
 			$pos = Position::fromObject($cpos->floor(), $cpos->getWorld());
-			$target->setSpawn($pos);
-
-			Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
+			foreach($targets as $target){
+				$target->setSpawn($pos);
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::pocketmine_command_spawnpoint_success($target->getName(), (string) round($pos->x, 2), (string) round($pos->y, 2), (string) round($pos->z, 2)));
+			}
 			return true;
 		}
 

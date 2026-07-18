@@ -72,6 +72,14 @@ class Item implements \JsonSerializable{
 	public const TAG_DISPLAY_LORE = "Lore";
 
 	public const TAG_KEEP_ON_DEATH = "minecraft:keep_on_death";
+	private const TAG_ITEM_LOCK = "minecraft:item_lock";
+
+	public const ITEM_LOCK_MODE_NONE = 0;
+	public const ITEM_LOCK_MODE_FULL = 1;
+	public const ITEM_LOCK_MODE_FULL_INVENTORY = 2;
+	public const ItemLockMode_NONE = self::ITEM_LOCK_MODE_NONE;
+	public const ItemLockMode_FULL = self::ITEM_LOCK_MODE_FULL;
+	public const ItemLockMode_FULL_INVENTORY = self::ITEM_LOCK_MODE_FULL_INVENTORY;
 
 	private const TAG_CAN_PLACE_ON = "CanPlaceOn"; //TAG_List<TAG_String>
 	private const TAG_CAN_DESTROY = "CanDestroy"; //TAG_List<TAG_String>
@@ -237,6 +245,24 @@ class Item implements \JsonSerializable{
 
 	public function setKeepOnDeath(bool $keepOnDeath) : void{
 		$this->keepOnDeath = $keepOnDeath;
+	}
+
+	public function getItemLockMode() : int{
+		return $this->getNamedTag()->getByte(self::TAG_ITEM_LOCK, self::ITEM_LOCK_MODE_NONE);
+	}
+
+	/**
+	 * Sets the Bedrock item lock mode stored in the minecraft:item_lock NBT tag.
+	 *
+	 * @return $this
+	 */
+	public function setItemLockMode(int $mode) : Item{
+		if($mode < self::ITEM_LOCK_MODE_NONE || $mode > self::ITEM_LOCK_MODE_FULL_INVENTORY){
+			throw new \InvalidArgumentException("Item lock mode must be one of the Item::ITEM_LOCK_MODE_* constants");
+		}
+
+		$this->getNamedTag()->setByte(self::TAG_ITEM_LOCK, $mode);
+		return $this;
 	}
 
 	/**

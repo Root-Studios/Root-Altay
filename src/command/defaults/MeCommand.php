@@ -26,6 +26,9 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
@@ -41,6 +44,12 @@ class MeCommand extends VanillaCommand{
 			KnownTranslationFactory::commands_me_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_ME);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("action", AvailableCommandsPacket::ARG_TYPE_MESSAGE),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

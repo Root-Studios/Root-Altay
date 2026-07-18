@@ -93,7 +93,8 @@ final class CraftingDataCache{
 		$noUnlockingRequirement = new RecipeUnlockingRequirement(null);
 		$recipeNetId = self::RECIPE_ID_OFFSET;
 		foreach($manager->getCraftingRecipeIndex() as $index => $recipe){
-			$recipeNetId++;
+			//Keep this in sync with ItemStackRequestExecutor, which subtracts the offset to recover the index.
+			$recipeNetId = $index + self::RECIPE_ID_OFFSET;
 			if($recipe instanceof ShapelessRecipe){
 				$typeTag = match($recipe->getType()){
 					ShapelessRecipeType::CRAFTING => CraftingRecipeBlockName::CRAFTING_TABLE,

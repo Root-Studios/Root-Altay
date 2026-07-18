@@ -31,6 +31,9 @@ use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\Random;
@@ -82,6 +85,25 @@ class ParticleCommand extends VanillaCommand{
 			KnownTranslationFactory::pocketmine_command_particle_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_PARTICLE);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$particle = $this->getHardEnum($hardcodedEnums, "Particle", [
+			"explode", "hugeexplosion", "hugeexplosionseed", "bubble", "splash", "wake", "water", "crit",
+			"smoke", "spell", "instantspell", "dripwater", "driplava", "townaura", "spore", "portal", "flame",
+			"lava", "reddust", "snowballpoof", "slime", "itembreak", "terrain", "heart", "ink", "droplet",
+			"enchantmenttable", "happyvillager", "angryvillager", "forcefield", "mobflame", "iconcrack",
+			"blockcrack", "blockdust", "sonicexplosion",
+		]);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("particle", $particle, 0),
+			CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+			CommandParameter::standard("xDelta", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+			CommandParameter::standard("yDelta", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+			CommandParameter::standard("zDelta", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+			CommandParameter::standard("count", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+			CommandParameter::standard("data", AvailableCommandsPacket::ARG_TYPE_STRING, 0, true),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

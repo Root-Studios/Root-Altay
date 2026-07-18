@@ -29,6 +29,12 @@ namespace pocketmine\command;
 use pocketmine\command\utils\CommandException;
 use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\lang\Translatable;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
+use pocketmine\network\mcpe\protocol\types\command\CommandSoftEnum;
+use pocketmine\network\mcpe\protocol\types\command\raw\CommandEnumConstraintRawData;
 use pocketmine\permission\PermissionManager;
 use pocketmine\Server;
 use pocketmine\utils\BroadcastLoggerForwarder;
@@ -37,6 +43,7 @@ use function array_values;
 use function explode;
 use function implode;
 use function str_replace;
+use function strtolower;
 use const PHP_INT_MAX;
 
 abstract class Command{
@@ -88,6 +95,36 @@ abstract class Command{
 	 * @throws CommandException
 	 */
 	abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
+
+	/**
+	 * Builds the command syntax sent to Bedrock clients for command auto-completion.
+	 * Commands supplied by plugins may override this to provide precise parameters.
+	 *
+	 * @param CommandHardEnum[]                 $hardcodedEnums
+	 * @param CommandSoftEnum[]                 $softEnums
+	 * @param CommandEnumConstraintRawData[]    $enumConstraints
+	 * @phpstan-param array<string, CommandHardEnum> $hardcodedEnums
+	 * @phpstan-param array<string, CommandSoftEnum> $softEnums
+	 * @phpstan-param list<CommandEnumConstraintRawData> $enumConstraints
+	 * @return CommandOverload[]
+	 * @phpstan-return list<CommandOverload>
+	 */
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("args", AvailableCommandsPacket::ARG_TYPE_RAWTEXT, 0, true)
+		])];
+	}
+
+	/**
+	 * @param CommandHardEnum[] $hardcodedEnums
+	 * @param string[]          $values
+	 * @phpstan-param array<string, CommandHardEnum> $hardcodedEnums
+	 * @phpstan-param list<string> $values
+	 */
+	protected function getHardEnum(array &$hardcodedEnums, string $name, array $values) : CommandHardEnum{
+		$key = strtolower($name);
+		return $hardcodedEnums[$key] ??= new CommandHardEnum($name, $values);
+	}
 
 	public function getName() : string{
 		return $this->name;

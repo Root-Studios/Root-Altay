@@ -27,6 +27,8 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\ServerProperties;
 use pocketmine\world\World;
@@ -41,6 +43,18 @@ class DifficultyCommand extends VanillaCommand{
 			KnownTranslationFactory::commands_difficulty_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_DIFFICULTY);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$difficulty = $this->getHardEnum($hardcodedEnums, "Difficulty", [
+			"peaceful", "p", "0",
+			"easy", "e", "1",
+			"normal", "n", "2",
+			"hard", "h", "3",
+		]);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("difficulty", $difficulty, 0),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

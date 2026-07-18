@@ -26,6 +26,9 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use function array_slice;
 use function count;
@@ -45,50 +48,92 @@ class TitleCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$simpleAction = $this->getHardEnum($hardcodedEnums, "TitleSimpleAction", ["clear", "reset"]);
+		$textAction = $this->getHardEnum($hardcodedEnums, "TitleTextAction", ["title", "subtitle", "actionbar"]);
+		$timesAction = $this->getHardEnum($hardcodedEnums, "TitleTimesAction", ["times"]);
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("action", $simpleAction, 0),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("action", $textAction, 0),
+				CommandParameter::standard("text", AvailableCommandsPacket::ARG_TYPE_MESSAGE),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::enum("action", $timesAction, 0),
+				CommandParameter::standard("fadeIn", AvailableCommandsPacket::ARG_TYPE_INT),
+				CommandParameter::standard("stay", AvailableCommandsPacket::ARG_TYPE_INT),
+				CommandParameter::standard("fadeOut", AvailableCommandsPacket::ARG_TYPE_INT),
+			]),
+		];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) < 2){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$player = $this->fetchPermittedPlayerTarget($sender, $args[0], DefaultPermissionNames::COMMAND_TITLE_SELF, DefaultPermissionNames::COMMAND_TITLE_OTHER);
-		if($player === null){
+		$players = $this->fetchPermittedPlayerTargets($sender, $args[0], DefaultPermissionNames::COMMAND_TITLE_SELF, DefaultPermissionNames::COMMAND_TITLE_OTHER);
+		if($players === null){
 			return true;
 		}
 
 		switch($args[1]){
 			case "clear":
-				$player->removeTitles();
+				foreach($players as $player){
+					$player->removeTitles();
+				}
 				break;
 			case "reset":
-				$player->resetTitles();
+				foreach($players as $player){
+					$player->resetTitles();
+				}
 				break;
 			case "title":
 				if(count($args) < 3){
 					throw new InvalidCommandSyntaxException();
 				}
 
-				$player->sendTitle(implode(" ", array_slice($args, 2)));
+				$text = implode(" ", array_slice($args, 2));
+				foreach($players as $player){
+					$player->sendTitle($text);
+				}
 				break;
 			case "subtitle":
 				if(count($args) < 3){
 					throw new InvalidCommandSyntaxException();
 				}
 
-				$player->sendSubTitle(implode(" ", array_slice($args, 2)));
+				$text = implode(" ", array_slice($args, 2));
+				foreach($players as $player){
+					$player->sendSubTitle($text);
+				}
 				break;
 			case "actionbar":
 				if(count($args) < 3){
 					throw new InvalidCommandSyntaxException();
 				}
 
-				$player->sendActionBarMessage(implode(" ", array_slice($args, 2)));
+				$text = implode(" ", array_slice($args, 2));
+				foreach($players as $player){
+					$player->sendActionBarMessage($text);
+				}
 				break;
 			case "times":
 				if(count($args) < 5){
 					throw new InvalidCommandSyntaxException();
 				}
 
-				$player->setTitleDuration($this->getInteger($sender, $args[2]), $this->getInteger($sender, $args[3]), $this->getInteger($sender, $args[4]));
+				$fadeIn = $this->getInteger($sender, $args[2]);
+				$stay = $this->getInteger($sender, $args[3]);
+				$fadeOut = $this->getInteger($sender, $args[4]);
+				foreach($players as $player){
+					$player->setTitleDuration($fadeIn, $stay, $fadeOut);
+				}
 				break;
 			default:
 				throw new InvalidCommandSyntaxException();

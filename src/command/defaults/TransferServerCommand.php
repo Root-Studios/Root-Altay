@@ -26,6 +26,9 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
@@ -40,6 +43,13 @@ class TransferServerCommand extends VanillaCommand{
 			KnownTranslationFactory::pocketmine_command_transferserver_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_TRANSFERSERVER);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("server", AvailableCommandsPacket::ARG_TYPE_STRING),
+			CommandParameter::standard("port", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

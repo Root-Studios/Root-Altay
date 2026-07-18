@@ -26,6 +26,8 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\BanEntry;
 use pocketmine\permission\DefaultPermissionNames;
 use function array_map;
@@ -44,6 +46,13 @@ class BanListCommand extends VanillaCommand{
 			KnownTranslationFactory::commands_banlist_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_BAN_LIST);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$action = $this->getHardEnum($hardcodedEnums, "BanListAction", ["ips", "players"]);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("action", $action, 0, true),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

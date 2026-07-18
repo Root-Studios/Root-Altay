@@ -26,6 +26,8 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\GameMode;
 use pocketmine\ServerProperties;
@@ -40,6 +42,19 @@ class DefaultGamemodeCommand extends VanillaCommand{
 			KnownTranslationFactory::commands_defaultgamemode_usage()
 		);
 		$this->setPermission(DefaultPermissionNames::COMMAND_DEFAULTGAMEMODE);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$aliases = [];
+		foreach(GameMode::cases() as $gameMode){
+			foreach($gameMode->getAliases() as $alias){
+				$aliases[] = $alias;
+			}
+		}
+		$gameMode = $this->getHardEnum($hardcodedEnums, "GameMode", $aliases);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("gameMode", $gameMode, 0),
+		])];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

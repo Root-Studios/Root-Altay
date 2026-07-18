@@ -32,6 +32,9 @@ use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\item\StringToItemParser;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\TextFormat;
 use function count;
@@ -48,13 +51,26 @@ class ClearCommand extends VanillaCommand{
 		$this->setPermissions([DefaultPermissionNames::COMMAND_CLEAR_SELF, DefaultPermissionNames::COMMAND_CLEAR_OTHER]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$itemAliases = [];
+		foreach(StringToItemParser::getInstance()->getKnownAliases() as $alias){
+			$itemAliases[] = (string) $alias;
+		}
+		$item = $this->getHardEnum($hardcodedEnums, "Item", $itemAliases);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET, 0, true),
+			CommandParameter::enum("item", $item, 0, true),
+			CommandParameter::standard("maxCount", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+		])];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) > 3){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$target = $this->fetchPermittedPlayerTarget($sender, $args[0] ?? null, DefaultPermissionNames::COMMAND_CLEAR_SELF, DefaultPermissionNames::COMMAND_CLEAR_OTHER);
-		if($target === null){
+		$targets = $this->fetchPermittedPlayerTargets($sender, $args[0] ?? null, DefaultPermissionNames::COMMAND_CLEAR_SELF, DefaultPermissionNames::COMMAND_CLEAR_OTHER);
+		if($targets === null){
 			return true;
 		}
 
@@ -74,65 +90,67 @@ class ClearCommand extends VanillaCommand{
 			}
 		}
 
-		/**
-		 * @var Inventory[] $inventories - This is the order that vanilla would clear items in.
-		 */
-		$inventories = [
-			$target->getInventory(),
-			$target->getCursorInventory(),
-			$target->getArmorInventory(),
-			$target->getOffHandInventory()
-		];
+		foreach($targets as $target){
+			/**
+			 * @var Inventory[] $inventories - This is the order that vanilla would clear items in.
+			 */
+			$inventories = [
+				$target->getInventory(),
+				$target->getCursorInventory(),
+				$target->getArmorInventory(),
+				$target->getOffHandInventory()
+			];
 
-		// Checking player's inventory for all the items matching the criteria
-		if($targetItem !== null && $maxCount === 0){
-			$count = $this->countItems($inventories, $targetItem);
-			if($count > 0){
-				$sender->sendMessage(KnownTranslationFactory::commands_clear_testing($target->getName(), (string) $count));
-			}else{
-				$sender->sendMessage(KnownTranslationFactory::commands_clear_failure_no_items($target->getName())->prefix(TextFormat::RED));
+			// Checking player's inventory for all the items matching the criteria
+			if($targetItem !== null && $maxCount === 0){
+				$count = $this->countItems($inventories, $targetItem);
+				if($count > 0){
+					$sender->sendMessage(KnownTranslationFactory::commands_clear_testing($target->getName(), (string) $count));
+				}else{
+					$sender->sendMessage(KnownTranslationFactory::commands_clear_failure_no_items($target->getName())->prefix(TextFormat::RED));
+				}
+				continue;
 			}
 
-			return true;
-		}
-
-		$clearedCount = 0;
-		if($targetItem === null){
-			// Clear all items from the inventories
-			$clearedCount += $this->countItems($inventories, null);
-			foreach($inventories as $inventory){
-				$inventory->clearAll();
-			}
-		}else{
-			// Clear the item from target's inventory irrelevant of the count
-			if($maxCount === -1){
-				$clearedCount += $this->countItems($inventories, $targetItem);
+			$clearedCount = 0;
+			if($targetItem === null){
+				// Clear all items from the inventories
+				$clearedCount += $this->countItems($inventories, null);
 				foreach($inventories as $inventory){
-					$inventory->remove($targetItem);
+					$inventory->clearAll();
 				}
 			}else{
-				// Clear the item from target's inventory up to maxCount
-				foreach($inventories as $inventory){
-					foreach($inventory->all($targetItem) as $index => $item){
-						// The count to reduce from the item and max count
-						$reductionCount = min($item->getCount(), $maxCount);
-						$item->pop($reductionCount);
-						$clearedCount += $reductionCount;
-						$inventory->setItem($index, $item);
+				// Clear the item from target's inventory irrelevant of the count
+				if($maxCount === -1){
+					$clearedCount += $this->countItems($inventories, $targetItem);
+					foreach($inventories as $inventory){
+						$inventory->remove($targetItem);
+					}
+				}else{
+					$remainingCount = $maxCount;
+					// Clear the item from target's inventory up to maxCount
+					foreach($inventories as $inventory){
+						foreach($inventory->all($targetItem) as $index => $item){
+							// The count to reduce from the item and max count
+							$reductionCount = min($item->getCount(), $remainingCount);
+							$item->pop($reductionCount);
+							$clearedCount += $reductionCount;
+							$inventory->setItem($index, $item);
 
-						$maxCount -= $reductionCount;
-						if($maxCount <= 0){
-							break 2;
+							$remainingCount -= $reductionCount;
+							if($remainingCount <= 0){
+								break 2;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		if($clearedCount > 0){
-			Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_clear_success($target->getName(), (string) $clearedCount));
-		}else{
-			$sender->sendMessage(KnownTranslationFactory::commands_clear_failure_no_items($target->getName())->prefix(TextFormat::RED));
+			if($clearedCount > 0){
+				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_clear_success($target->getName(), (string) $clearedCount));
+			}else{
+				$sender->sendMessage(KnownTranslationFactory::commands_clear_failure_no_items($target->getName())->prefix(TextFormat::RED));
+			}
 		}
 
 		return true;

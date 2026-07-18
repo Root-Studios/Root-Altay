@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\GameMode;
 use function count;
@@ -45,6 +48,20 @@ class GamemodeCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$aliases = [];
+		foreach(GameMode::cases() as $gameMode){
+			foreach($gameMode->getAliases() as $alias){
+				$aliases[] = $alias;
+			}
+		}
+		$gameMode = $this->getHardEnum($hardcodedEnums, "GameMode", $aliases);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::enum("gameMode", $gameMode, 0),
+			CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET, 0, true),
+		])];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) === 0){
 			throw new InvalidCommandSyntaxException();
@@ -56,21 +73,21 @@ class GamemodeCommand extends VanillaCommand{
 			return true;
 		}
 
-		$target = $this->fetchPermittedPlayerTarget($sender, $args[1] ?? null, DefaultPermissionNames::COMMAND_GAMEMODE_SELF, DefaultPermissionNames::COMMAND_GAMEMODE_OTHER);
-		if($target === null){
+		$targets = $this->fetchPermittedPlayerTargets($sender, $args[1] ?? null, DefaultPermissionNames::COMMAND_GAMEMODE_SELF, DefaultPermissionNames::COMMAND_GAMEMODE_OTHER);
+		if($targets === null){
 			return true;
 		}
 
-		if($target->getGamemode() === $gameMode){
-			$sender->sendMessage(KnownTranslationFactory::pocketmine_command_gamemode_failure($target->getName()));
-			return true;
-		}
+		foreach($targets as $target){
+			if($target->getGamemode() === $gameMode){
+				$sender->sendMessage(KnownTranslationFactory::pocketmine_command_gamemode_failure($target->getName()));
+				continue;
+			}
 
-		$target->setGamemode($gameMode);
-		if($gameMode !== $target->getGamemode()){
-			$sender->sendMessage(KnownTranslationFactory::pocketmine_command_gamemode_failure($target->getName()));
-		}else{
-			if($target === $sender){
+			$target->setGamemode($gameMode);
+			if($gameMode !== $target->getGamemode()){
+				$sender->sendMessage(KnownTranslationFactory::pocketmine_command_gamemode_failure($target->getName()));
+			}elseif($target === $sender){
 				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_gamemode_success_self($gameMode->getTranslatableName()));
 			}else{
 				$target->sendMessage(KnownTranslationFactory::gameMode_changed($gameMode->getTranslatableName()));

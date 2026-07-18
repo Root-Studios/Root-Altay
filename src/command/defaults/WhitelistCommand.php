@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\Server;
@@ -53,6 +56,20 @@ class WhitelistCommand extends VanillaCommand{
 			DefaultPermissionNames::COMMAND_WHITELIST_ADD,
 			DefaultPermissionNames::COMMAND_WHITELIST_REMOVE
 		]);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$simpleAction = $this->getHardEnum($hardcodedEnums, "WhitelistSimpleAction", ["on", "off", "list", "reload"]);
+		$playerAction = $this->getHardEnum($hardcodedEnums, "WhitelistPlayerAction", ["add", "remove"]);
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $simpleAction, 0),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $playerAction, 0),
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+			]),
+		];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -107,25 +124,41 @@ class WhitelistCommand extends VanillaCommand{
 					return true;
 			}
 		}elseif(count($args) === 2){
-			if(!Player::isValidUserName($args[1])){
-				throw new InvalidCommandSyntaxException();
+			if($this->isPlayerSelector($args[1])){
+				$players = $this->fetchPlayerTargets($sender, $args[1]);
+				if($players === null){
+					return true;
+				}
+				$names = [];
+				foreach($players as $player){
+					$names[] = $player->getName();
+				}
+			}else{
+				if(!Player::isValidUserName($args[1])){
+					throw new InvalidCommandSyntaxException();
+				}
+				$names = [$args[1]];
 			}
 			switch(strtolower($args[0])){
 				case "add":
 					if($this->testPermission($sender, DefaultPermissionNames::COMMAND_WHITELIST_ADD)){
-						$sender->getServer()->addWhitelist($args[1]);
-						Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_whitelist_add_success($args[1]));
+						foreach($names as $name){
+							$sender->getServer()->addWhitelist($name);
+							Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_whitelist_add_success($name));
+						}
 					}
 
 					return true;
 				case "remove":
 					if($this->testPermission($sender, DefaultPermissionNames::COMMAND_WHITELIST_REMOVE)){
 						$server = $sender->getServer();
-						$server->removeWhitelist($args[1]);
-						if(!$server->isWhitelisted($args[1])){
-							$server->getPlayerExact($args[1])?->kick(KnownTranslationFactory::pocketmine_disconnect_kick(KnownTranslationFactory::pocketmine_disconnect_whitelisted()));
+						foreach($names as $name){
+							$server->removeWhitelist($name);
+							if(!$server->isWhitelisted($name)){
+								$server->getPlayerExact($name)?->kick(KnownTranslationFactory::pocketmine_disconnect_kick(KnownTranslationFactory::pocketmine_disconnect_whitelisted()));
+							}
+							Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_whitelist_remove_success($name));
 						}
-						Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_whitelist_remove_success($args[1]));
 					}
 
 					return true;

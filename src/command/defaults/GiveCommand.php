@@ -33,6 +33,9 @@ use pocketmine\lang\KnownTranslationFactory;
 use pocketmine\nbt\JsonNbtParser;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\NbtException;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\utils\TextFormat;
 use function array_slice;
@@ -53,13 +56,27 @@ class GiveCommand extends VanillaCommand{
 		]);
 	}
 
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$itemAliases = [];
+		foreach(StringToItemParser::getInstance()->getKnownAliases() as $alias){
+			$itemAliases[] = (string) $alias;
+		}
+		$item = $this->getHardEnum($hardcodedEnums, "Item", $itemAliases);
+		return [new CommandOverload(chaining: false, parameters: [
+			CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+			CommandParameter::enum("item", $item, 0),
+			CommandParameter::standard("amount", AvailableCommandsPacket::ARG_TYPE_INT, 0, true),
+			CommandParameter::standard("tags", AvailableCommandsPacket::ARG_TYPE_JSON, 0, true),
+		])];
+	}
+
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(count($args) < 2){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$player = $this->fetchPermittedPlayerTarget($sender, $args[0], DefaultPermissionNames::COMMAND_GIVE_SELF, DefaultPermissionNames::COMMAND_GIVE_OTHER);
-		if($player === null){
+		$players = $this->fetchPermittedPlayerTargets($sender, $args[0], DefaultPermissionNames::COMMAND_GIVE_SELF, DefaultPermissionNames::COMMAND_GIVE_OTHER);
+		if($players === null){
 			return true;
 		}
 
@@ -97,14 +114,17 @@ class GiveCommand extends VanillaCommand{
 			}
 		}
 
-		//TODO: overflow
-		$player->getInventory()->addItem($item);
+		foreach($players as $player){
+			$targetItem = clone $item;
+			//TODO: overflow
+			$player->getInventory()->addItem($targetItem);
 
-		Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_give_success(
-			$item->getName() . " (" . $args[1] . ")",
-			(string) $item->getCount(),
-			$player->getName()
-		));
+			Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_give_success(
+				$targetItem->getName() . " (" . $args[1] . ")",
+				(string) $targetItem->getCount(),
+				$player->getName()
+			));
+		}
 		return true;
 	}
 }

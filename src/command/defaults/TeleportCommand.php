@@ -28,6 +28,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Location;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -52,13 +55,46 @@ class TeleportCommand extends VanillaCommand{
 		]);
 	}
 
-	private function findPlayer(CommandSender $sender, string $playerName) : ?Player{
-		$subject = $sender->getServer()->getPlayerByPrefix($playerName);
-		if($subject === null){
-			$sender->sendMessage(KnownTranslationFactory::pocketmine_command_error_playerNotFound($playerName)->prefix(TextFormat::RED));
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("destination", AvailableCommandsPacket::ARG_TYPE_TARGET),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+				CommandParameter::standard("yaw", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+				CommandParameter::standard("pitch", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::standard("destination", AvailableCommandsPacket::ARG_TYPE_TARGET),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::standard("player", AvailableCommandsPacket::ARG_TYPE_TARGET),
+				CommandParameter::standard("position", AvailableCommandsPacket::ARG_TYPE_POSITION),
+				CommandParameter::standard("yaw", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+				CommandParameter::standard("pitch", AvailableCommandsPacket::ARG_TYPE_FLOAT),
+			]),
+		];
+	}
+
+	private function findPlayer(CommandSender $sender, string $target) : ?Player{
+		$players = $this->fetchPlayerTargets($sender, $target);
+		if($players === null){
 			return null;
 		}
-		return $subject;
+		if(count($players) !== 1){
+			$sender->sendMessage(TextFormat::RED . "Destination selector must match exactly one player");
+			return null;
+		}
+		return $players[0];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -77,8 +113,8 @@ class TeleportCommand extends VanillaCommand{
 				throw new InvalidCommandSyntaxException();
 		}
 
-		$subject = $this->fetchPermittedPlayerTarget($sender, $subjectName, DefaultPermissionNames::COMMAND_TELEPORT_SELF, DefaultPermissionNames::COMMAND_TELEPORT_OTHER);
-		if($subject === null){
+		$subjects = $this->fetchPermittedPlayerTargets($sender, $subjectName, DefaultPermissionNames::COMMAND_TELEPORT_SELF, DefaultPermissionNames::COMMAND_TELEPORT_OTHER);
+		if($subjects === null){
 			return true;
 		}
 
@@ -89,33 +125,37 @@ class TeleportCommand extends VanillaCommand{
 					return true;
 				}
 
-				$subject->teleport($targetPlayer->getLocation());
-				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_tp_success($subject->getName(), $targetPlayer->getName()));
+				foreach($subjects as $subject){
+					$subject->teleport($targetPlayer->getLocation());
+					Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_tp_success($subject->getName(), $targetPlayer->getName()));
+				}
 
 				return true;
 			case 3:
 			case 5:
-				$base = $subject->getLocation();
-				if(count($args) === 5){
-					$yaw = (float) $args[3];
-					$pitch = (float) $args[4];
-				}else{
-					$yaw = $base->yaw;
-					$pitch = $base->pitch;
+				foreach($subjects as $subject){
+					$base = $subject->getLocation();
+					if(count($args) === 5){
+						$yaw = (float) $args[3];
+						$pitch = (float) $args[4];
+					}else{
+						$yaw = $base->yaw;
+						$pitch = $base->pitch;
+					}
+
+					$x = $this->getRelativeDouble($base->x, $sender, $args[0]);
+					$y = $this->getRelativeDouble($base->y, $sender, $args[1], World::Y_MIN, World::Y_MAX);
+					$z = $this->getRelativeDouble($base->z, $sender, $args[2]);
+					$targetLocation = new Location($x, $y, $z, $base->getWorld(), $yaw, $pitch);
+
+					$subject->teleport($targetLocation);
+					Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_tp_success_coordinates(
+						$subject->getName(),
+						(string) round($targetLocation->x, 2),
+						(string) round($targetLocation->y, 2),
+						(string) round($targetLocation->z, 2)
+					));
 				}
-
-				$x = $this->getRelativeDouble($base->x, $sender, $args[0]);
-				$y = $this->getRelativeDouble($base->y, $sender, $args[1], World::Y_MIN, World::Y_MAX);
-				$z = $this->getRelativeDouble($base->z, $sender, $args[2]);
-				$targetLocation = new Location($x, $y, $z, $base->getWorld(), $yaw, $pitch);
-
-				$subject->teleport($targetLocation);
-				Command::broadcastCommandMessage($sender, KnownTranslationFactory::commands_tp_success_coordinates(
-					$subject->getName(),
-					(string) round($targetLocation->x, 2),
-					(string) round($targetLocation->y, 2),
-					(string) round($targetLocation->z, 2)
-				));
 				return true;
 			default:
 				throw new AssumptionFailedError("This branch should be unreachable (for now)");

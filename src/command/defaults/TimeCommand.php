@@ -27,6 +27,9 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\KnownTranslationFactory;
+use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
+use pocketmine\network\mcpe\protocol\types\command\CommandOverload;
+use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use pocketmine\permission\DefaultPermissionNames;
 use pocketmine\player\Player;
 use pocketmine\world\World;
@@ -47,6 +50,30 @@ class TimeCommand extends VanillaCommand{
 			DefaultPermissionNames::COMMAND_TIME_STOP,
 			DefaultPermissionNames::COMMAND_TIME_QUERY
 		]);
+	}
+
+	public function buildOverloads(array &$hardcodedEnums, array &$softEnums, array &$enumConstraints) : array{
+		$simpleAction = $this->getHardEnum($hardcodedEnums, "TimeSimpleAction", ["start", "stop", "query"]);
+		$setAction = $this->getHardEnum($hardcodedEnums, "TimeSetAction", ["set"]);
+		$addAction = $this->getHardEnum($hardcodedEnums, "TimeAddAction", ["add"]);
+		$preset = $this->getHardEnum($hardcodedEnums, "TimePreset", ["day", "noon", "sunset", "night", "midnight", "sunrise"]);
+		return [
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $simpleAction, 0),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $setAction, 0),
+				CommandParameter::enum("time", $preset, 0),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $setAction, 0),
+				CommandParameter::standard("time", AvailableCommandsPacket::ARG_TYPE_INT),
+			]),
+			new CommandOverload(chaining: false, parameters: [
+				CommandParameter::enum("action", $addAction, 0),
+				CommandParameter::standard("time", AvailableCommandsPacket::ARG_TYPE_INT),
+			]),
+		];
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

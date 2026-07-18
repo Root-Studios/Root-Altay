@@ -125,7 +125,6 @@ use function count;
 use function floor;
 use function get_class;
 use function gettype;
-use function in_array;
 use function is_a;
 use function is_object;
 use function max;
@@ -286,7 +285,7 @@ class World implements ChunkManager{
 
 	private string $folderName;
 	private string $displayName;
-	private bool $weatherEnabled;
+	private bool $weatherEnabled = true;
 	private int $rainTime;
 	private float $rainLevel;
 	private int $lightningTime;
@@ -498,16 +497,11 @@ class World implements ChunkManager{
 		$this->worldId = self::$worldIdCounter++;
 
 		$this->displayName = $this->provider->getWorldData()->getName();
-		$disabledWeatherWorlds = array_map('strtolower', $server->getConfigGroup()->getProperty(YmlServerProperties::WEATHER_DISABLED_WORLDS, []));
-		$this->weatherEnabled = !in_array(strtolower($name), $disabledWeatherWorlds, true);
 		$worldData = $this->provider->getWorldData();
 		$this->rainTime = $worldData->getRainTime();
 		$this->rainLevel = $worldData->getRainLevel();
 		$this->lightningTime = $worldData->getLightningTime();
 		$this->lightningLevel = $worldData->getLightningLevel();
-		if(!$this->weatherEnabled){
-			$this->rainLevel = $this->lightningLevel = 0.0;
-		}
 		$this->logger = new \PrefixedLogger($server->getLogger(), "World: $this->displayName");
 
 		$this->blockStateRegistry = RuntimeBlockStateRegistry::getInstance();
@@ -1104,6 +1098,18 @@ class World implements ChunkManager{
 		return $this->weatherEnabled;
 	}
 
+	public function disableWeather() : void{
+		$this->weatherEnabled = false;
+		$this->rainLevel = $this->lightningLevel = 0.0;
+		if(count($this->players) > 0){
+			NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+		}
+	}
+
+	public function enableWeather() : void{
+		$this->weatherEnabled = true;
+	}
+
 	public function getRainLevel() : float{
 		return $this->rainLevel;
 	}
@@ -1121,19 +1127,29 @@ class World implements ChunkManager{
 	}
 
 	public function setRainLevel(float $level) : void{
+		if(!$this->weatherEnabled){
+			return;
+		}
 		$this->rainLevel = max(0.0, min(1.0, $level));
 		if($this->rainLevel <= 0.0 && $this->lightningLevel > 0.0){
 			$this->lightningLevel = 0.0;
 		}
-		NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+		if(count($this->players) > 0){
+			NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+		}
 	}
 
 	public function setLightningLevel(float $level) : void{
+		if(!$this->weatherEnabled){
+			return;
+		}
 		$this->lightningLevel = max(0.0, min(1.0, $level));
 		if($this->lightningLevel > 0.0){
 			$this->rainLevel = 1.0;
 		}
-		NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+		if(count($this->players) > 0){
+			NetworkBroadcastUtils::broadcastPackets($this->players, $this->getWeatherPackets());
+		}
 	}
 
 	/** @return LevelEventPacket[] */
